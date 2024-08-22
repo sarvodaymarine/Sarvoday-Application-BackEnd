@@ -1,0 +1,34 @@
+Project: SARVODAY MARINE
+Application: SARVODAY_MARINE_BACKEND
+Description:
+
+Archirecture: Domain-Driven Design (DDD)
+
+Folder Structure:
+
+src/
+|-- modules/
+| |-- module_name/
+| | |-- domain/
+| | | |-- models/
+| | | |-- services/
+| | |-- application/
+| | | |-- controller/
+| | | |-- interface/
+| | | |-- middleware/
+| | |-- infrastructure/
+| | | |-- persistence/
+|-- infrastructure/
+| |-- http/
+| | |-- routes/
+| |-- logger/
+| |-- security/
+|-- shared/
+| |-- utils/
+| | |-- exceptions/
+| |-- middleware/
+| |-- valueObjects/
+| |-- interface/
+|-- test/
+|-- app.ts
+|-- index.ts
