@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CreateSalesOrder, SalesOrder } from './salesOrder.interface';
 
 export interface SalesOrderRepository {

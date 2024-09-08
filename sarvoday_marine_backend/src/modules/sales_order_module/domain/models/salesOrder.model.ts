@@ -34,8 +34,8 @@ const ExpensesSchema: Schema = new Schema({
 });
 
 const TaxSchema: Schema = new Schema({
-  taxName: { type: String, required: true },
-  description: { type: String, required: true },
+  taxName: { type: String },
+  description: { type: String },
   cGST: { type: Number, required: true, min: [0, 'cGST must be at least 0'], max: [100, 'cGST must be at most 100'] },
   sGST: { type: Number, required: true, min: [0, 'sGST must be at least 0'], max: [100, 'sGST must be at most 100'] },
   taxPrice: { type: Number, required: true },

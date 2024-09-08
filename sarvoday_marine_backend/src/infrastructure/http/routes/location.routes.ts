@@ -41,12 +41,12 @@ router.get(
     locationController.getLocationById(req, res, next),
 );
 
-router.get(
-  '/getLocationbyName/:locationName',
-  validateLocationApiParams,
-  (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
-    locationController.getLocationByName(req, res, next),
-);
+// router.get(
+//   '/getLocationbyName/:locationName',
+//   validateLocationApiParams,
+//   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
+//     locationController.getLocationByName(req, res, next),
+// );
 
 router.get(
   '/getAllLocations',

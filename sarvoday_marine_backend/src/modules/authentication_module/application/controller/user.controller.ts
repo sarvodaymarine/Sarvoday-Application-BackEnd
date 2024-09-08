@@ -26,6 +26,14 @@ export class UserController {
     }
   }
 
+  async validateUserToken(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    try {
+      res.send();
+    } catch (error) {
+      next(new HttpException(400, (error as Error).message));
+    }
+  }
+
   // async deleteUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
   //   const id = req.params.id;
   //   try {

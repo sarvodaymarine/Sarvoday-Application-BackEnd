@@ -71,4 +71,15 @@ export class ServiceController {
       next(new HttpException(400, (error as Error).message));
     }
   }
+
+  async getReportServiceImageConfig(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const serviceListParam = req.params.serviceList;
+    try {
+      const serviceList: string[] = JSON.parse(serviceListParam);
+      const service = await this.services.getReportServicesImageconfig(serviceList);
+      res.json(service);
+    } catch (error) {
+      next(new HttpException(400, (error as Error).message));
+    }
+  }
 }

@@ -7,7 +7,6 @@ import {
   validateLoginCredentical,
 } from '@src/modules/authentication_module/application/middleware/user.middleware';
 import { authMiddleware } from '@src/infrastructure/security/auth.middleware';
-import { checkFirstLogin } from '@src/modules/authentication_module/application/middleware/first_time_login_check.middleware';
 
 const userRepository = new UserRepositoryImpl();
 const createUser = new UserService(userRepository);
@@ -20,6 +19,13 @@ router.post(
   validateUser,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     userController.provideAuthAcess(req, res, next),
+);
+
+router.post(
+  '/validateUserToken',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
+    userController.validateUserToken(req, res, next),
 );
 
 router.post(

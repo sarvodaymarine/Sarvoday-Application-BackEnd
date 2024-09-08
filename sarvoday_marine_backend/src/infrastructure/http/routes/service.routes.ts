@@ -2,6 +2,7 @@ import { NextFunction, Router, Request, Response } from 'express';
 import { ServiceRepositoryImpl } from '@src/modules/services_module/infrastructure/persistence/service.repository';
 import { ServiceServices } from '@src/modules/services_module/domain/services/service.service';
 import { ServiceController } from '@src/modules/services_module/application/controller/services.controller';
+import { authMiddleware } from '@src/infrastructure/security/auth.middleware';
 // import {
 //   validateServiceData,
 //   validateServiceUpdatedData,
@@ -52,6 +53,13 @@ router.get(
   '/getAllService',
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     serviceController.getAllServices(req, res, next),
+);
+
+router.get(
+  '/getImageConfigForReport',
+  authMiddleware,
+  (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
+    serviceController.getReportServiceImageConfig(req, res, next),
 );
 
 export default router;

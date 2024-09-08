@@ -2,16 +2,19 @@ import mongoose from 'mongoose';
 
 interface ImageConfig {
   imageName: string;
-  imagecount: number;
+  imageCount: number;
 }
 
-interface CreateService {
+interface ServiceImageConfig {
   serviceName: string;
+  serviceImage: ImageConfig[];
+}
+
+interface CreateService extends ServiceImageConfig {
   container1Price: number;
   container2Price: number;
   container3Price: number;
   container4Price: number;
-  serviceImage: ImageConfig[];
 }
 
 interface Service extends CreateService {
@@ -20,4 +23,4 @@ interface Service extends CreateService {
   updatedAt: Date;
 }
 
-export { CreateService, Service, ImageConfig };
+export { CreateService, Service, ImageConfig, ServiceImageConfig };

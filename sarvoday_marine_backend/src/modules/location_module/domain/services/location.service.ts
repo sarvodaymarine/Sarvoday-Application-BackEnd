@@ -25,9 +25,9 @@ export class LocationServices {
     return this.locationRepository.findById(id);
   }
 
-  async getLocationByName(locationName: string): Promise<Location | null> {
-    return this.locationRepository.findByLocationName(locationName);
-  }
+  // async getLocationByName(locationName: string): Promise<Location | null> {
+  //   return this.locationRepository.findByLocationName(locationName);
+  // }
 
   async getAllLocations(): Promise<Location[] | null> {
     return await this.locationRepository.getAllLocations();

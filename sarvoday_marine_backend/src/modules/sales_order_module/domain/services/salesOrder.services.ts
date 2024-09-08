@@ -7,12 +7,23 @@ import { ClientService } from '@src/modules/client_module/application/interface/
 import { BusinessConfigRepository } from '../../application/interface/business_cofig_repository.interface';
 import { Types } from 'mongoose';
 import { SoStatus } from '@src/shared/enum/so_status.enum';
+import { ReportRepository } from '@src/modules/report_module/application/interface/report_repository.interface';
+import {
+  ContainerModel,
+  Report,
+  ServiceContainerModel,
+  ServiceContainerMetaData,
+} from '@src/modules/report_module/application/interface/report.interface';
+import { Service } from '@src/modules/services_module/application/interface/services.interface';
+import { ServiceRepository } from '@src/modules/services_module/application/interface/services_repository.interface';
 
 export class SalesOrderServices {
   constructor(
     private salesOrderRepository: SalesOrderRepository,
     private clientRepository: ClientRepository,
     private config: BusinessConfigRepository,
+    private reportRepository: ReportRepository,
+    private serviceRepository: ServiceRepository,
   ) {}
 
   private getStartOfWeek(): Date {
@@ -34,8 +45,6 @@ export class SalesOrderServices {
       (await Promise.all(
         services.map(async (service) => {
           const clientService = clientServices.find((cs) => {
-            console.log('cs._id', cs._id.toString());
-            console.log('service.serviceId', service.serviceId.toString());
             return !isFromUpdate
               ? cs.serviceId === service.serviceId.toString()
               : cs._id.toString() === service.serviceId.toString();
@@ -82,6 +91,7 @@ export class SalesOrderServices {
     if (!client) {
       throw new Error(`Client with ID ${data.clientId} not found`);
     }
+    const servicesList = await this.serviceRepository.getAllServices();
     const businessConfig = await this.config.getBusinessConfig();
     if (!businessConfig) {
       throw new Error(`Something went to wrong please try again later!`);
@@ -118,7 +128,8 @@ export class SalesOrderServices {
     data.tax = calculatedTaxes;
     data.totalTax = totalTax;
     data.totalInvoice = totalTax + totalExpensePrice + totalServicePrice;
-
+    this.config.update(businessConfig[0]._id.toString(), { soId: businessConfig[0].soId + 1 });
+    await this.setupReportDetails(data, servicesList ?? [], client.services, false);
     return this.salesOrderRepository.create(data);
   }
 
@@ -133,6 +144,8 @@ export class SalesOrderServices {
     if (!client) {
       throw new Error(`Client with ID ${orderDetail.clientId} not found`);
     }
+    const servicesList = await this.serviceRepository.getAllServices();
+    await this.setupReportDetails(updateDetails, servicesList ?? [], client.services, true);
 
     if (userRole === UserRoles.ADMIN) {
       // const oldServiceIds = orderDetail.services.map((s) => s.serviceId.toString());
@@ -258,6 +271,86 @@ export class SalesOrderServices {
     }
 
     return await this.salesOrderRepository.update(id, updateDetails);
+  }
+
+  async setupReportDetails(
+    data: Partial<SalesOrder>,
+    servicesList: Service[],
+    clientServicesList: ClientService[],
+    isFromUpdate: boolean,
+  ): Promise<void> {
+    const serviceReports: ServiceContainerModel[] = [];
+    const promise: Promise<ServiceContainerMetaData>[] = [];
+    for (const service of data.services ?? []) {
+      const serviceFromClient = clientServicesList.find((cs) =>
+        isFromUpdate
+          ? cs.serviceId === service.serviceId.toString()
+          : cs._id.toString() === service.serviceId.toString(),
+      );
+
+      if (!serviceFromClient) {
+        console.error(`Service from client not found for service: ${service.serviceName}`);
+        throw new Error(`Service from client not found for service: ${service.serviceName}`);
+      }
+
+      const clientService = servicesList.find((cs) => {
+        return cs._id.toString() === serviceFromClient?.serviceId;
+      });
+
+      if (!clientService) {
+        console.error(`Client service not found for service: ${serviceFromClient.serviceName}`);
+        throw new Error(`Client service not found for service: ${serviceFromClient.serviceName}`);
+      }
+      console.log('clientService', clientService);
+      const containerImages = clientService.serviceImage
+        .filter((element) => {
+          console.log('Filtering element with imagecount:', element.imageCount);
+          const imageCount = Number(element.imageCount);
+          return imageCount > 0;
+        })
+        .flatMap((element) => {
+          console.log('element', element);
+          const imageCount = Number(element.imageCount);
+          return Array.from({ length: imageCount }, (_, i) => ({
+            imageName: element.imageName,
+            imageId: `${element.imageName}${i + 1}`,
+            imageUrlLink: '',
+          }));
+        });
+
+      console.log('Container Images:', containerImages);
+
+      const container: ContainerModel = { containerImages };
+      const containerList = Array.from({ length: data.noOfContainer ?? 0 }, () => container);
+
+      const serviceReport: ServiceContainerModel = {
+        serviceName: service.serviceName,
+        containerReports: containerList,
+      };
+      serviceReports.push(serviceReport);
+      promise.push(
+        this.reportRepository
+          .createServiceReport(serviceReport)
+          .then((id) => ({
+            serviceName: serviceReport.serviceName,
+            serviceId: id,
+          }))
+          .catch((error) => {
+            throw new Error(`Failed to create service report: ${error.message}`);
+          }),
+      );
+    }
+
+    const result = await Promise.all(promise);
+    const reportData: Report = {
+      orderId: data.orderId,
+      isEmailSended: false,
+      isReviewed: false,
+      isSubmited: false,
+      serviceReports: result,
+    };
+
+    await this.reportRepository.create(reportData);
   }
 
   async getSalesOrderById(id: string): Promise<SalesOrder | null> {

@@ -43,7 +43,6 @@ export const validateServiceData = (req: Request, res: Response, next: NextFunct
 
 export const validateServiceUpdatedData = (req: Request, res: Response, next: NextFunction) => {
   const { error } = updateServiceSchema.validate(req.body, { abortEarly: false });
-  // const { error: paramsError } = serviceParamsSchema.validate(req.params);
 
   if (error) {
     const details = [...(error?.details || [])];

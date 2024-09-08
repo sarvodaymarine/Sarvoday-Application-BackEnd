@@ -55,13 +55,13 @@ export class LocationController {
     }
   }
 
-  async getLocationByName(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
-    const locationName = req.params.locationName;
-    try {
-      const location = await this.locationServices.getLocationByName(locationName);
-      res.json(location);
-    } catch (error) {
-      next(new HttpException(400, (error as Error).message));
-    }
-  }
+//   async getLocationByName(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+//     const locationName = req.params.locationName;
+//     try {
+//       const location = await this.locationServices.getLocationByName(locationName);
+//       res.json(location);
+//     } catch (error) {
+//       next(new HttpException(400, (error as Error).message));
+//     }
+//   }
 }

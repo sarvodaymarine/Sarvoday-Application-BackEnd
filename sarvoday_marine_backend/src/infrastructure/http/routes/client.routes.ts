@@ -2,10 +2,10 @@ import { NextFunction, Router, Response, Request } from 'express';
 import { ClientRepositoryImpl } from '@src/modules/client_module/infrastructure/persistence/client.repository';
 import { ClientServices } from '@src/modules/client_module/domain/services/client.services';
 import { ClientController } from '@src/modules/client_module/application/controller/client.controller';
-import {
-  validateClientApiParams,
-  validateUpdatedClientReqData,
-} from '@src/modules/client_module/application/middleware/client.middleware';
+// import {
+//   validateClientApiParams,
+//   validateUpdatedClientReqData,
+// } from '@src/modules/client_module/application/middleware/client.middleware';
 import { UserRepositoryImpl } from '@src/modules/authentication_module/infrastructure/persistence/user.repository';
 import { UserService } from '@src/modules/authentication_module/domain/services/user.services';
 

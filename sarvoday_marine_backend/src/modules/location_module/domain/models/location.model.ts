@@ -19,4 +19,4 @@ locationSchema.set('toJSON', { getters: true });
 locationSchema.set('toObject', { getters: true });
 
 const LocationModel = mongoose.model<LocationDocument>('Locations', locationSchema);
-export { LocationModel };
+export { LocationModel, LocationDocument };

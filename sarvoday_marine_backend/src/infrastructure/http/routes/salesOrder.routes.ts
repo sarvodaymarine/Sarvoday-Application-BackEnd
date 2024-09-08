@@ -1,16 +1,26 @@
 import { authMiddleware } from '@src/infrastructure/security/auth.middleware';
 import { ClientRepositoryImpl } from '@src/modules/client_module/infrastructure/persistence/client.repository';
+import { ReportRepositoryImpl } from '@src/modules/report_module/infrastructure/persistence/report.repository';
 import { SalesOrderController } from '@src/modules/sales_order_module/application/controller/salesOrder.controller';
-import { validateSalesOrderRequestBody } from '@src/modules/sales_order_module/application/middleware/salesOrder.middleware';
+// import { validateSalesOrderRequestBody } from '@src/modules/sales_order_module/application/middleware/salesOrder.middleware';
 import { SalesOrderServices } from '@src/modules/sales_order_module/domain/services/salesOrder.services';
 import { BusinessConfigRepositoryImpl } from '@src/modules/sales_order_module/infrastructure/persistence/business_config.repository';
 import { SalesOrderRepositoryImpl } from '@src/modules/sales_order_module/infrastructure/persistence/salesOrder.repository';
+import { ServiceRepositoryImpl } from '@src/modules/services_module/infrastructure/persistence/service.repository';
 import { Router, NextFunction, Request, Response } from 'express';
 
 const salesOrderRepositoryImpl = new SalesOrderRepositoryImpl();
 const clientRepository = new ClientRepositoryImpl();
 const businessConfig = new BusinessConfigRepositoryImpl();
-const salesOrdersAPI = new SalesOrderServices(salesOrderRepositoryImpl, clientRepository, businessConfig);
+const reportRepository = new ReportRepositoryImpl();
+const serviceRepository = new ServiceRepositoryImpl();
+const salesOrdersAPI = new SalesOrderServices(
+  salesOrderRepositoryImpl,
+  clientRepository,
+  businessConfig,
+  reportRepository,
+  serviceRepository,
+);
 const salesOrderController = new SalesOrderController(salesOrdersAPI);
 const router = Router();
 

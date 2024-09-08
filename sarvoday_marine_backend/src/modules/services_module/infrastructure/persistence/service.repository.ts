@@ -1,4 +1,5 @@
-import { Service, CreateService } from '../../application/interface/services.interface';
+import { Types } from 'mongoose';
+import { Service, CreateService, ServiceImageConfig } from '../../application/interface/services.interface';
 import { ServiceRepository } from '../../application/interface/services_repository.interface';
 import { ServiceModel } from '../../domain/models/services.model';
 
@@ -26,6 +27,17 @@ export class ServiceRepositoryImpl implements ServiceRepository {
     return service ? (service.toObject() as Service) : null;
   }
 
+  async getReportServicesImageconfig(servicesList: string[]): Promise<ServiceImageConfig[] | null> {
+    const objectIdList = servicesList.map((id) => new Types.ObjectId(id));
+    const services = await ServiceModel.find({ _id: { $in: objectIdList } }, 'serviceName serviceImage').exec();
+
+    const serviceImageConfigs: ServiceImageConfig[] = services.map((service) => ({
+      serviceName: service.serviceName,
+      serviceImage: service.serviceImage,
+    }));
+
+    return serviceImageConfigs;
+  }
   async getAllServices(): Promise<Service[] | null> {
     return await ServiceModel.find();
   }

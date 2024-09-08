@@ -17,7 +17,7 @@ export async function authMiddleware(req: CustomRequest, res: Response, next: Ne
   console.log('bearer', bearer);
 
   if (!bearer || !bearer.startsWith('Bearer ')) {
-    return next(new HttpException(401, 'Unauthorised 1'));
+    return next(new HttpException(401, 'Unauthorised'));
   }
 
   const accessToken = bearer.split('Bearer ')[1].trim();
@@ -25,20 +25,19 @@ export async function authMiddleware(req: CustomRequest, res: Response, next: Ne
     const payload: Token | jwt.JsonWebTokenError = await token.verifyToken(accessToken);
 
     if (payload instanceof jwt.JsonWebTokenError) {
-      return next(new HttpException(401, 'Unauthorised 2'));
+      return next(new HttpException(401, 'Unauthorised'));
     }
     const user = await UserModel.findById(payload.id).select('-password').exec();
     if (!user) {
-      return next(new HttpException(401, 'Unauthorised 3'));
+      return next(new HttpException(401, 'Unauthorised'));
     }
 
     req.userId = user._id;
     req.userRole = user.userRole;
     req.user = user;
-
     return next();
   } catch (error) {
-    return next(new HttpException(401, 'Unauthorised 4'));
+    return next(new HttpException(401, 'Unauthorised'));
   }
 }
 

@@ -1,4 +1,9 @@
-import { CreateService, ImageConfig, Service } from '../../application/interface/services.interface';
+import {
+  CreateService,
+  ImageConfig,
+  Service,
+  ServiceImageConfig,
+} from '../../application/interface/services.interface';
 import { ServiceRepositoryImpl } from '../../infrastructure/persistence/service.repository';
 export class ServiceServices {
   constructor(private serviceRepository: ServiceRepositoryImpl) {}
@@ -40,5 +45,9 @@ export class ServiceServices {
 
   async getAllServices(): Promise<Service[] | null> {
     return await this.serviceRepository.getAllServices();
+  }
+
+  async getReportServicesImageconfig(serviceList: string[]): Promise<ServiceImageConfig[] | null> {
+    return this.serviceRepository.getReportServicesImageconfig(serviceList);
   }
 }

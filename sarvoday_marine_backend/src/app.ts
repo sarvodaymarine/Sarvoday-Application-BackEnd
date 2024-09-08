@@ -8,6 +8,7 @@ import ClientRoutes from '@src/infrastructure/http/routes/client.routes';
 import EmployeeRoutes from '@src/infrastructure/http/routes/employee.routes';
 import LocationRotes from '@src/infrastructure/http/routes/location.routes';
 import SalesOrderRoutes from '@src/infrastructure/http/routes/salesOrder.routes';
+import ReportRoutes from '@src/infrastructure/http/routes/report.routes';
 import morgan from 'morgan';
 import hemlet from 'helmet';
 import * as dotenv from 'dotenv-safe';
@@ -45,6 +46,7 @@ class App {
     this.express.use('/api/clients/', ClientRoutes);
     this.express.use('/api/employees/', EmployeeRoutes);
     this.express.use('/api/orders/', SalesOrderRoutes);
+    this.express.use('/api/reports/', ReportRoutes);
   }
 
   private initialiseErrorHandling(): void {

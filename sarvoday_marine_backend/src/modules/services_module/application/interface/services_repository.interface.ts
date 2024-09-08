@@ -1,4 +1,4 @@
-import { CreateService, Service } from './services.interface';
+import { CreateService, Service, ServiceImageConfig } from './services.interface';
 
 export interface ServiceRepository {
   create(service: CreateService): Promise<void>;
@@ -7,4 +7,5 @@ export interface ServiceRepository {
   findById(id: string): Promise<Service | null>;
   findByServiceName(serviceName: string): Promise<Service | null>;
   getAllServices(): Promise<Service[] | null>;
+  getReportServicesImageconfig(servicesList: string[]): Promise<ServiceImageConfig[] | null>;
 }
