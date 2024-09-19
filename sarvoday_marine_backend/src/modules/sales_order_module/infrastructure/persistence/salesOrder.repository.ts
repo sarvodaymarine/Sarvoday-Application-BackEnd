@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SalesOrder } from '../../application/interface/salesOrder.interface';
 import { SalesOrderRepository } from '../../application/interface/salesOrder_repository.interface';
 import { SalesOrderModel } from '../../domain/models/salesOrder.model';
@@ -18,6 +19,11 @@ export class SalesOrderRepositoryImpl implements SalesOrderRepository {
 
   async findById(id: string): Promise<SalesOrder | null> {
     const salesOrder = await SalesOrderModel.findById(id);
+    return salesOrder ? salesOrder.toJSON() : null;
+  }
+
+  async findByOrderId(orderId: string): Promise<SalesOrder | null> {
+    const salesOrder = await SalesOrderModel.findOne({ orderId: orderId });
     return salesOrder ? salesOrder.toJSON() : null;
   }
 

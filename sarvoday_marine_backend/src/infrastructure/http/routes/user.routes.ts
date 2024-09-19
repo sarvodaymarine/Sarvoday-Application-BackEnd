@@ -6,7 +6,7 @@ import {
   validateUser,
   validateLoginCredentical,
 } from '@src/modules/authentication_module/application/middleware/user.middleware';
-import { authMiddleware } from '@src/infrastructure/security/auth.middleware';
+import { authMiddleware, authorizeSuperAdminRole } from '@src/infrastructure/security/auth.middleware';
 
 const userRepository = new UserRepositoryImpl();
 const createUser = new UserService(userRepository);
@@ -37,17 +37,18 @@ router.post(
 
 router.post(
   '/userLogin',
-  // validateLoginCredentical,
-  // checkFirstLogin,
+  validateLoginCredentical,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     userController.userLogin(req, res, next),
 );
 
-// router.delete(
-//   'deleteUser/:id',
-//   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
-//     userController.deleteUser(req, res, next),
-// );
+router.put(
+  'enableDisable/:id',
+  authMiddleware,
+  authorizeSuperAdminRole,
+  (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
+    userController.activeDeActiveUserAuth(req, res, next),
+);
 
 router.get(
   '/:id/get',

@@ -28,6 +28,7 @@ const emailValidation = async (value: string, helper: CustomHelpers<string>) => 
     await email.validate();
     return email.getValue();
   } catch (error) {
+    console.error('Error Invalid email address:', error);
     return helper.message({ custom: 'Invalid email address' });
   }
 };

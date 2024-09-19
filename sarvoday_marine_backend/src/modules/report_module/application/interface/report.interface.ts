@@ -1,12 +1,21 @@
-import { ReportStatus } from "aws-sdk/clients/inspector";
+import { ReportStatus } from '@src/shared/enum/report_status.enum';
+import { ObjectId } from 'mongoose';
 
 export interface ContainerImageConfig {
   imageName?: string;
   imageId?: string;
   imageUrlLink?: string;
+  imagePath?: string;
+}
+
+export interface PathAndSignedUrl {
+  path: string;
+  signedUrl: string;
 }
 
 export interface ContainerModel {
+  id?: string;
+  _id?: ObjectId;
   containerNo?: string;
   maxGrossWeight?: string;
   tareWeight?: string;
@@ -26,10 +35,12 @@ export interface ContainerModel {
   baggageCondition?: string;
   conclusion?: string;
   containerImages?: ContainerImageConfig[];
+  containerReportPath?: string;
   containerReportUrl?: string;
 }
 
 export interface ServiceContainerModel {
+  _id?: ObjectId;
   serviceName?: string;
   reportStatus?: ReportStatus;
   containerReports?: ContainerModel[];

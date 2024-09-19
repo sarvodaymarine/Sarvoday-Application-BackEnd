@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Report, ServiceContainerModel } from './report.interface';
+import { ContainerModel, Report, ServiceContainerModel } from './report.interface';
 
 export interface ReportRepository {
   create(report: Report): Promise<void>;
@@ -9,5 +9,12 @@ export interface ReportRepository {
   findReportBySalesOrder(orderId: string): Promise<Report | null>;
   findServiceReportById(serviceId: mongoose.Types.ObjectId): Promise<ServiceContainerModel | null>;
   updateServiceReport(id: string, updatedServiceReportDetail: Partial<ServiceContainerModel>): Promise<void>;
-  findStatusByIds(serviceIds: string[]): Promise<{ _id: mongoose.Types.ObjectId; reportStatus: string }[] | null>;
+  updateServiceContainerPDFPath(
+    serviceId: mongoose.Types.ObjectId,
+    containerId: mongoose.Types.ObjectId,
+    path: string,
+  ): Promise<void>;
+  findStatusByIds(
+    serviceIds: string[],
+  ): Promise<{ _id: mongoose.Types.ObjectId; reportStatus: string; containerReports: ContainerModel[] }[] | null>;
 }

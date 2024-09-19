@@ -25,6 +25,7 @@ export class ReportController {
       if (userRole === undefined) {
         next(new HttpException(401, 'Unauthorised'));
       } else {
+        console.log('updateDetails', updateDetails);
         const client = await this.reportServices.updateServiceReport(
           reportId,
           serviceId,
@@ -62,10 +63,17 @@ export class ReportController {
     }
   }
 
-  async imageManagment(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+  async getImageUploadUrl(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
-      // const signedUtls = await this.reportServices.getReportById(req.body);
-      // res.json(signedUtls);
+      const { reportId, serviceReportId, containerId } = req.params;
+      const images = req.body;
+      const signedUtls = await this.reportServices.getSignedUrlForImageUploadService(
+        reportId,
+        serviceReportId,
+        containerId,
+        images,
+      );
+      res.json(signedUtls);
     } catch (error) {
       console.log('error', error);
       next(new HttpException(400, (error as Error).message));

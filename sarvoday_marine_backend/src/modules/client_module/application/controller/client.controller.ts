@@ -4,7 +4,6 @@ import { ClientServices } from '../../domain/services/client.services';
 import { UserService } from '@src/modules/authentication_module/domain/services/user.services';
 import { User } from '@src/modules/authentication_module/application/interface/user.interface';
 import { UserRoles } from '@src/shared/enum/user_roles.enum';
-import { ClientService } from '../interface/client.interface';
 
 export class ClientController {
   constructor(
@@ -24,6 +23,7 @@ export class ClientController {
         UserRoles.CLIENT,
         false,
       );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const clientServiceList = services.map((service: Record<string, any>) => {
         const { id, ...rest } = service;
         return { serviceId: id, ...rest };

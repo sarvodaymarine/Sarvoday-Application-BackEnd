@@ -27,7 +27,13 @@ export async function authMiddleware(req: CustomRequest, res: Response, next: Ne
     if (payload instanceof jwt.JsonWebTokenError) {
       return next(new HttpException(401, 'Unauthorised'));
     }
-    const user = await UserModel.findById(payload.id).select('-password').exec();
+    const user = await UserModel.findById(payload.id)
+      .where('isDeleted')
+      .equals(false)
+      .where('isActive')
+      .equals(true)
+      .select('-password')
+      .exec();
     if (!user) {
       return next(new HttpException(401, 'Unauthorised'));
     }
@@ -36,14 +42,22 @@ export async function authMiddleware(req: CustomRequest, res: Response, next: Ne
     req.userRole = user.userRole;
     req.user = user;
     return next();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return next(new HttpException(401, 'Unauthorised'));
   }
 }
 
-export const authorize = (roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    return res.status(403).json({ error: 'Access denied.' });
+export const authorizeAdminOrSuperAdminRole = (req: CustomRequest, res: Response, next: NextFunction) => {
+  if (req.userRole != null && (req.userRole == UserRoles.ADMIN || req.userRole == UserRoles.SUPERADMIN)) {
     next();
-  };
+  }
+  next(new HttpException(403, "Permission Denied! You don't have access"));
+};
+
+export const authorizeSuperAdminRole = (req: CustomRequest, res: Response, next: NextFunction) => {
+  if (req.userRole != null && req.userRole == UserRoles.SUPERADMIN) {
+    next();
+  }
+  next(new HttpException(403, "Permission Denied! You don't have access"));
 };

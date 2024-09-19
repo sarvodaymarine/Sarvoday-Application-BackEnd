@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Images</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 0mm 20mm;
+        }
+
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            padding: 5mm 15mm;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .header {
+            padding-bottom: 5mm;
+        }
+
+        .header-row-main {
+            display: flex;
+            align-items: center;
+            padding-left: 5%;
+            padding-right: 5%;
+            margin-bottom: 5px;
+        }
+
+        .logo {
+            width: 60px;
+            height: auto;
+            margin-right: 20px;
+        }
+
+        .company-info {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .company-info h1 {
+            font-size: 22px;
+            font-weight: bold;
+            color: skyblue;
+            line-height: 1.2;
+            margin-bottom: 3px;
+        }
+
+        .company-info p {
+            font-size: 15px;
+            color: skyblue;
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .header-row-bottom {
+            display: flex;
+            justify-content: space-between;
+            padding-left: 5%;
+            padding-right: 5%;
+            font-size: 16px;
+            color: skyblue;
+            font-weight: bold;
+        }
+
+        .content {
+            flex: 1;
+            margin-top: 5mm;
+            margin-bottom: 10mm;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .content p {
+            margin-bottom: 10px;
+        }
+
+        .first-row-text {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            margin-right: 10px;
+            margin-left: 10px;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            height: calc(80% - 20mm);
+            margin-right: 10px;
+            margin-left: 10px;
+        }
+
+        .image-container {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px; /* Adjust padding if needed */
+            box-sizing: border-box; /* Ensure padding does not affect size calculations */
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Ensure the image fits within the container without cropping */
+            display: block;
+            margin: 0 auto;
+        }
+
+        .image-name {
+            margin-top: 5px;
+            margin-bottom: 5px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: right;
+            font-size: 14px;
+            padding-top: 5mm;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .a4-page {
+                border: none;
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="a4-page">
+        <div class="header">
+            <div class="header-row-main">
+                <div class="logo">
+                    <img src="{{sarvoday_marine_logo}}" width="60px" height="40px" alt="Sarvoday Marine">
+                </div>
+                <div class="company-info">
+                    <h1>SARVODAY MARINE SERVICES PVT. LTD.</h1>
+                    <p>F3- Shreesiddhi Plaza Complex, Jafarabad Road, Rajula, Amreli, Gujarat - 385560</p>
+                    <p>Mob. +91-9099120989</p>
+                </div>
+            </div>
+            <div class="header-row-bottom">
+                <div class="left">{{orderId}}</div>
+                <div class="right">Date: {{reportDate}}</div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="first-row-text">
+                <p><strong>Container No: {{containerNo}}</strong></p>
+                <p>Annexure – I</p>
+            </div>
+            <div class="image-grid">
+                {{imageGrid}}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

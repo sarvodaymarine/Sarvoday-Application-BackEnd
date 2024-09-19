@@ -1,83 +1,124 @@
-import path from 'path';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import puppeteer from 'puppeteer';
 import fs from 'fs';
-import os from 'os';
+import path from 'path';
 
-export class PDFGenerator {
-  async generateReportPDF() {
-    try {
-      // Launch a new Puppeteer browser instance
-      const browser = await puppeteer.launch();
-      // Create a new page within the browser
-      const page = await browser.newPage();
-
-      // Define the path to the Handlebars template file
-      // const templatePath = path.join(__dirname, '..', '..', '..', 'shared', 'utils', 'report_pdf_template.html');
-
-      // Read the contents of the Handlebars template file
-      const templateSource = fs.readFileSync(
-        `C:\\Users\\Arpit\\OneDrive\\Desktop\\sarvoday_marine_backend\\Sarvoday-Application-BackEnd\\sarvoday_marine_backend\\src\\shared\\utils\\report_pdf_template.html`,
-        'utf-8',
-      );
-
-      // If using Handlebars, compile the template here
-      // const template = Handlebars.compile(templateSource);
-
-      // Mock data for rendering (replace this with actual data)
-      // const renderedData = {
-      //   title: 'Sample Report',
-      //   content: 'This is a sample report generated using Puppeteer and Handlebars.'
-      // };
-
-      // Render the template with the calculated data
-      // const compiledHtml = template(renderedData);
-
-      // Set the HTML content of the Puppeteer page
-      await page.setContent(/*compiledHtml*/ templateSource, { waitUntil: 'networkidle0' });
-
-      // Generate a PDF buffer from the page content
-      const pdfBuffer = await page.pdf({
-        format: 'Letter',
-        printBackground: true,
-      });
-
-      // Close the Puppeteer browser
-      await browser.close();
-
-      // Log the PDF buffer for debugging (optional)
-      console.log('PDF Buffer generated successfully.');
-
-      // Get the system temporary directory
-      const tempDir = os.tmpdir();
-
-      // Create a unique filename for the temp PDF file
-      const tempFilePath = path.join(tempDir, `temp_report_${Date.now()}.pdf`);
-
-      // Write the PDF buffer to the temp file
-      fs.writeFile(tempFilePath, pdfBuffer, (err) => {
-        if (err) {
-          console.error('Error writing to temp file:', err);
-        } else {
-          console.log(`PDF successfully written to temporary file: ${tempFilePath}`);
-          // You can now use tempFilePath to reference the stored PDF
-        }
-      });
-
-      // Optionally, handle file cleanup after use
-      // fs.unlink(tempFilePath, (err) => {
-      //   if (err) {
-      //     console.error('Error deleting temp file:', err);
-      //   } else {
-      //     console.log('Temporary file deleted successfully.');
-      //   }
-      // });
-    } catch (error) {
-      // If an error occurs, log the error
-      console.error('An error occurred:', error);
-    }
-  }
+export interface TemplateData {
+  sarvoday_marine_logo: string;
+  orderId: string;
+  reportDate: string;
+  customerName: string;
+  customerAddress: string;
+  portLocation: string;
+  orderDate: string;
+  productName: string;
+  containerSize: string;
+  containerNo: string;
+  netWeight: string;
+  typeOfBaggage: string;
+  noOfPkg: string;
+  baggageName: string;
+  maxGrossWeight: string;
+  tareWeight: string;
+  backGround: string;
+  packing: string;
+  survey: string;
+  batchNo: string;
+  lineSealNo: string;
+  customSealNo: string;
+  conclusion: string;
+  company_signed_stamp: string;
+  images: { url: string; name: string }[];
 }
 
-// Example usage:
-const pdfGenerator = new PDFGenerator();
-pdfGenerator.generateReportPDF();
+export class ReportGenerator {
+  private outputPDFPath: string;
+  private data: TemplateData;
+
+  constructor(outputPDFPath: string, data: TemplateData) {
+    this.outputPDFPath = outputPDFPath;
+    this.data = data;
+  }
+
+  private populateTemplate(html: string): string {
+    return html.replace(/{{(\w+)}}/g, (match, key) => {
+      return (this.data as any)[key] || '';
+    });
+  }
+
+  // Method to populate the image section of the template
+  private populateImageTemplate(html: string, images: { url: string; name: string }[]): string {
+    let populatedHtml = html.replace(/{{sarvoday_marine_logo}}/g, this.data.sarvoday_marine_logo);
+    populatedHtml = populatedHtml.replace(/{{orderId}}/g, this.data.orderId);
+    populatedHtml = populatedHtml.replace(/{{reportDate}}/g, this.data.reportDate);
+    populatedHtml = populatedHtml.replace(/{{containerNo}}/g, this.data.containerNo);
+    let imageGridHtml = '';
+    images.forEach((image) => {
+      if (image.url) {
+        imageGridHtml += `
+          <div class="image-container">
+            <img src="${image.url}"width="300" height="200" alt="${image.name}">
+            <div class="image-name">${image.name}</div>
+          </div>
+        `;
+      }
+    });
+    return populatedHtml.replace(/{{imageGrid}}/g, imageGridHtml);
+  }
+
+  public async generatePDF(): Promise<void> {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    const template1Html = this.loadAndPopulateTemplate('report_page1.html');
+    const template2Html = this.loadAndPopulateTemplate('report_page2.html');
+    const template3Html = this.loadAndPopulateTemplate('report_page3.html');
+    const template4Html = this.loadTemplate('report_image_page.html');
+
+    const imagesPerPage = 8;
+    const totalImages = this.data.images.length;
+    const pages: string[] = [];
+
+    for (let i = 0; i < totalImages; i += imagesPerPage) {
+      const imageGroup = this.data.images.slice(i, i + imagesPerPage);
+      const pageHtml = this.populateImageTemplate(template4Html, imageGroup);
+      pages.push(pageHtml);
+    }
+
+    const combinedHtml = `
+      <html>
+        <body>
+          ${template1Html}
+          <div style="page-break-before: always;"></div> <!-- Page break before second template -->
+          ${template2Html}
+          <div style="page-break-before: always;"></div> <!-- Page break before third template -->
+          ${template3Html}
+          <div style="page-break-before: always;"></div> <!-- Page break before image pages -->
+          ${pages.map((page, index) => `<div style="page-break-before: ${index === 0 ? 'auto' : 'always'};">${page}</div>`).join('')}
+        </body>
+      </html>
+    `;
+
+    await page.setContent(combinedHtml, { waitUntil: 'networkidle0' });
+
+    await page.pdf({
+      path: this.outputPDFPath,
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '0mm', right: '10mm', bottom: '0mm', left: '10mm' },
+    });
+
+    await browser.close();
+  }
+
+  private loadAndPopulateTemplate(templateName: string): string {
+    const templatePath = path.join(process.cwd(), 'src', 'templates', templateName);
+    const templateHtml = fs.readFileSync(templatePath, 'utf8');
+    return this.populateTemplate(templateHtml);
+  }
+
+  private loadTemplate(templateName: string): string {
+    const templatePath = path.join(process.cwd(), 'src', 'templates', templateName);
+    return fs.readFileSync(templatePath, 'utf8');
+  }
+}

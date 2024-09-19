@@ -2,6 +2,6 @@ export enum SoStatus {
   BOOKED = 'booked',
   ACTIVE = 'active',
   COMPLETED = 'completed',
-  REWIEDED = 'rewinded',
+  // REWIEDED = 'rewinded',
   OVERDUE = 'overdue',
 }

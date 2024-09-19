@@ -9,11 +9,11 @@ function validateEnv(): void {
     MONGO_PATH: str(),
     MONGO_USER: str(),
     JWT_SECREAT: str(),
-    BACKBLAZE_keyID: str(),
-    BACKBLAZE_BUCKET_NAME: str(),
-    BACKBLAZE_APPLICATIONKEY: str(),
-    BACKBLAZE_keyName: str(),
-    BACKBLAZE_BUCKET_ENDPOINT: str(),
+    AWS_S3_BUCKET_NAME: str(),
+    AWS_BUCKET_REGION: str(),
+    AWS_ACCESS_KEY: str(),
+    AWS_SECRET_ACCESS_KEY: str(),
+    AWS_ENDPOINT_URL: str(),
     PORT: port({ default: 3000 }),
   });
 }

@@ -26,13 +26,6 @@ export class SalesOrderServices {
     private serviceRepository: ServiceRepository,
   ) {}
 
-  private getStartOfWeek(): Date {
-    const currentDate = new Date();
-    const startOfWeek = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay()));
-    startOfWeek.setHours(0, 0, 0, 0);
-    return startOfWeek;
-  }
-
   private async ServicePriceCalculation(
     noOfContainer: number,
     services: SoService[],
@@ -357,38 +350,49 @@ export class SalesOrderServices {
     return this.salesOrderRepository.findById(id);
   }
 
-  async getAllSalesOrders(userRole: string, userId: Types.ObjectId): Promise<SalesOrder[] | null> {
+  async getAllSalesOrders(
+    userRole: string,
+    userId: Types.ObjectId,
+    startDateOfWeek: string,
+    lastDateOfWeek: string,
+  ): Promise<SalesOrder[] | null> {
     let filter = {};
+    console.log('userRole', userRole);
+    const startDate = new Date(startDateOfWeek).setHours(0, 0, 0, 0);
+    const endDate = new Date(lastDateOfWeek).setHours(23, 59, 59, 59);
+
+    const query = { $gte: startDate, $lte: endDate };
 
     switch (userRole) {
       case 'admin':
         filter = {
           adminId: userId,
-          createdAt: { $gte: this.getStartOfWeek() },
+          orderDate: query,
         };
         break;
       case 'client':
         filter = {
           clientId: userId,
-          createdAt: { $gte: this.getStartOfWeek() },
+          orderDate: query,
         };
         break;
       case 'employee':
         filter = {
           'employees.employeeId': userId,
           'employees.isAssigned': true,
-          createdAt: { $gte: this.getStartOfWeek() },
+          orderDate: query,
         };
         break;
       case 'superadmin':
         filter = {
-          createdAt: { $gte: this.getStartOfWeek() },
+          orderDate: query,
         };
         break;
       default:
         throw new Error('Invalid user type');
     }
     const salesOrders = await this.salesOrderRepository.getAllSalesOrders(filter);
+    console.log('salesOrders', salesOrders);
     if (!salesOrders) {
       return [];
     }

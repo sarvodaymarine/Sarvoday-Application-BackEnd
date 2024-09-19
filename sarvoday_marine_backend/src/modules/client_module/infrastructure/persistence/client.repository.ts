@@ -33,7 +33,7 @@ export class ClientRepositoryImpl implements ClientRepository {
 
   async getAllClientsForEmployees(): Promise<ClientResponseBasedOnUser[] | null> {
     const clientList = await ClientModel.find();
-    let clientResponseList: ClientResponseBasedOnUser[] = [];
+    const clientResponseList: ClientResponseBasedOnUser[] = [];
     clientList.forEach((client) => {
       clientResponseList.push({
         ...client,

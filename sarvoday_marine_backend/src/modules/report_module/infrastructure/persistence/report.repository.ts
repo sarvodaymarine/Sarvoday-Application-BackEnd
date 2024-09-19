@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import { Report, ServiceContainerModel } from '../../application/interface/report.interface';
+import { ContainerModel, Report, ServiceContainerModel } from '../../application/interface/report.interface';
 import { ReportRepository } from '../../application/interface/report_repository.interface';
-import { IServiceContainerModel, ReportModel, ServiceReportModel } from '../../domain/models/report.model';
+import { ReportModel, ServiceReportModel } from '../../domain/models/report.model';
 
 export class ReportRepositoryImpl implements ReportRepository {
   async create(order: Report): Promise<void> {
@@ -23,12 +23,31 @@ export class ReportRepositoryImpl implements ReportRepository {
     );
   }
 
+  async updateServiceContainerPDFPath(
+    serviceId: mongoose.Types.ObjectId,
+    containerId: mongoose.Types.ObjectId,
+    path: string,
+  ): Promise<void> {
+    await ServiceReportModel.updateOne(
+      {
+        _id: new mongoose.Types.ObjectId(serviceId),
+        'containerReports._id': new mongoose.Types.ObjectId(containerId),
+      },
+      {
+        $set: { 'containerReports.$.containerReportUrl': path },
+      },
+    );
+  }
+
   async updateServiceReport(id: string, updatedServiceReportDetail: Partial<ServiceContainerModel>): Promise<void> {
-    await ServiceReportModel.findOneAndUpdate(
+    const updatedReport = await ServiceReportModel.findOneAndUpdate(
       { _id: id },
       { ...updatedServiceReportDetail, updatedAt: new Date() },
       { new: true },
     );
+    if (!updatedReport) {
+      throw new Error(`Service report with id ${id} not found.`);
+    }
   }
 
   async findById(reportId: mongoose.Types.ObjectId): Promise<Report | null> {
@@ -42,7 +61,7 @@ export class ReportRepositoryImpl implements ReportRepository {
   }
 
   async findServiceReportById(serviceId: mongoose.Types.ObjectId): Promise<ServiceContainerModel | null> {
-    console.log("serviceId", serviceId);
+    console.log('serviceId', serviceId);
     const serviceReport = await ServiceReportModel.findOne({ _id: serviceId }).exec();
     console.log('ServiceReport', serviceReport);
     return serviceReport ? serviceReport.toJSON() : null;
@@ -50,17 +69,32 @@ export class ReportRepositoryImpl implements ReportRepository {
 
   async findStatusByIds(
     serviceIds: string[],
-  ): Promise<{ _id: mongoose.Types.ObjectId; reportStatus: string }[] | null> {
+  ): Promise<{ _id: mongoose.Types.ObjectId; reportStatus: string; containerReports: ContainerModel[] }[] | null> {
     const objectIdList = serviceIds.map((id) => new mongoose.Types.ObjectId(id));
-    const services = await ServiceReportModel.find({ _id: { $in: objectIdList } }, { _id: 1, reportStatus: 1 }).exec();
+
+    const services = await ServiceReportModel.find(
+      { _id: { $in: objectIdList } },
+      { _id: 1, reportStatus: 1, containerReports: 1 },
+    ).exec();
+
     const filteredServices = services.map((service) => {
-      const { _id, reportStatus } = service.toObject<IServiceContainerModel>();
-      if (typeof reportStatus !== 'string') {
-        throw new Error(`something went to wrong`);
+      const { _id, reportStatus, containerReports } = service.toObject<ServiceContainerModel>();
+
+      if (!(_id instanceof mongoose.Types.ObjectId)) {
+        throw new Error('Invalid _id type');
       }
 
-      return { _id, reportStatus };
+      if (typeof reportStatus !== 'string') {
+        throw new Error(`Unexpected reportStatus type`);
+      }
+
+      if (!containerReports) {
+        throw new Error(`Missing containerReports`);
+      }
+
+      return { _id: _id, reportStatus, containerReports };
     });
+
     return filteredServices;
   }
 }

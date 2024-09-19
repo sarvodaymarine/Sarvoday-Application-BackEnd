@@ -42,7 +42,7 @@ router.put(
 );
 
 router.get(
-  '/getAllSalesOrders',
+  '/getAllSalesOrders/:startDateOfWeek/:lastDateOfWeek',
   authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     salesOrderController.getAllSalesOrders(req, res, next),

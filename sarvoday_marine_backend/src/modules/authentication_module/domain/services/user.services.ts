@@ -2,8 +2,7 @@ import { UserRepositoryImpl } from '../../infrastructure/persistence/user.reposi
 import { UserRoles } from '@src/shared/enum/user_roles.enum';
 import { LoginCredential, User } from '../../application/interface/user.interface';
 import { BaseUser } from '@src/shared/interface/base_user.interface';
-import mongoose, { ClientSession } from 'mongoose';
-
+import mongoose from 'mongoose';
 export class UserService {
   constructor(private userRepositoryImpl: UserRepositoryImpl) {}
 
@@ -14,7 +13,6 @@ export class UserService {
     countryCode: string,
     mobile: string,
     userRole: UserRoles,
-    // options: { session?: ClientSession } = {},
     isActive = true,
   ): Promise<User> {
     const user: BaseUser = {
@@ -27,7 +25,12 @@ export class UserService {
       isActive: isActive,
       isDeleted: false,
     };
-    return await this.userRepositoryImpl.create(user /*options*/);
+    const existUser = await this.userRepositoryImpl.findUserByEmailAndMobile(email, mobile);
+    if (existUser) {
+      return await this.userRepositoryImpl.create(user /*options*/);
+    } else {
+      throw 'User is already Exist';
+    }
   }
 
   async loginService(email: string, password: string): Promise<string> {
@@ -61,6 +64,7 @@ export class UserService {
 
   async EnableDisableUserAuth(id: string, updateDetails: Partial<User>): Promise<User | null> {
     const userId = new mongoose.Types.ObjectId(id);
+    console.log('Service start2');
     return await this.userRepositoryImpl.update(userId, updateDetails);
   }
 

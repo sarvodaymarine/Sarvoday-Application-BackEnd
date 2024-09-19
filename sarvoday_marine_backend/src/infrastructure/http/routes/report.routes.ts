@@ -2,10 +2,12 @@ import { authMiddleware } from '@src/infrastructure/security/auth.middleware';
 import { ReportController } from '@src/modules/report_module/application/controller/report.controller';
 import { ReportServices } from '@src/modules/report_module/domain/services/report.services';
 import { ReportRepositoryImpl } from '@src/modules/report_module/infrastructure/persistence/report.repository';
+import { SalesOrderRepositoryImpl } from '@src/modules/sales_order_module/infrastructure/persistence/salesOrder.repository';
 import { Router, NextFunction, Request, Response } from 'express';
 
 const reportRepository = new ReportRepositoryImpl();
-const reportAPI = new ReportServices(reportRepository);
+const salesOrderRepository = new SalesOrderRepositoryImpl();
+const reportAPI = new ReportServices(reportRepository, salesOrderRepository);
 const reprotController = new ReportController(reportAPI);
 const router = Router();
 
@@ -19,7 +21,7 @@ router.post(
 
 router.put(
   '/updateReport/:reportId/serviceReport/:serviceId',
-  authMiddleware,
+  // authMiddleware,
   // validateSalesOrderRequestBody,
 
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
@@ -38,10 +40,11 @@ router.get(
     reprotController.getServiceReportById(req, res, next),
 );
 
-router.get(
-  '/images/signUrl/',
+router.post(
+  '/:reportId/serviceReportImage/:serviceReportId/containerReport/:containerId/uploadImages',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
-    reprotController.imageManagment(req, res, next),
+    reprotController.getImageUploadUrl(req, res, next),
 );
 
 export default router;

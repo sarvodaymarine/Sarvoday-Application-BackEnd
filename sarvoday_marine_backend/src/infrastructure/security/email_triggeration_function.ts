@@ -1,14 +1,8 @@
 import nodemailer from 'nodemailer';
 
-interface EmailOptions {
-  to: string;
-  subject: string;
-  text: string;
-  html?: string;
-}
-
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
+  // host: 'smtp.gmail.com',
+  service: 'gmail',
   port: 587,
   secure: false,
   // service: 'smtp.gmail.com',
@@ -20,7 +14,7 @@ const transporter = nodemailer.createTransport({
 
 export const sendEmail = async (email: string, name: string, dummyPassowrd: string): Promise<void> => {
   const mailOptions = {
-    from: '"Sender Name" <arpitagr2122@gmail.com>',
+    from: '"Sarvoday Marine" <jainish.sarvodaymarine@gmail.com>',
     to: email,
     subject: 'Access Details for your Sarvoday Marine Account',
     html: `
@@ -84,7 +78,7 @@ export const sendEmail = async (email: string, name: string, dummyPassowrd: stri
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
   } catch (error) {
     console.error('Error sending email:', error);
   }

@@ -12,4 +12,5 @@ export interface UserRepository {
   findUserByMobile(countryCode: string, mobile: string): Promise<User | null>;
   getAllUsers(): Promise<User[]>;
   changePassword(id: string, newPassword: string): Promise<void>;
+  findUserByEmailAndMobile(email: string, mobile: string): Promise<User | null>;
 }

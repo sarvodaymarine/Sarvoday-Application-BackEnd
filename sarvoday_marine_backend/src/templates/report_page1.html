@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report page1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 10mm 20mm;
+        }
+
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            padding: 10mm 10mm;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .header {
+            padding-bottom: 5mm;
+        }
+
+        .header-row-main {
+            display: flex;
+            align-items: center;
+            padding-left: 5%;
+            padding-right: 5%;
+            margin-bottom: 5px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-right: 20px;
+        }
+
+        .company-info {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .company-info h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: skyblue;
+            line-height: 1.2;
+            margin-bottom: 3px;
+        }
+
+        .company-info p {
+            font-size: 15px;
+            color: skyblue;
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .header-row-bottom {
+            display: flex;
+            justify-content: space-between;
+            padding-left: 5%;
+            color: skyblue;
+            padding-right: 5%;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .content {
+            flex-grow: 1;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-top: 10mm;
+        }
+
+        .content p {
+            margin-bottom: 10px;
+        }
+
+        .report-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+
+        .report-details {
+            display: flex;
+            flex-wrap: wrap;
+            column-gap: 10px;
+            row-gap: 10px;
+            /* Space between rows */
+        }
+
+        .report-details-row {
+            flex: 1;
+            min-width: 45%;
+            /* Ensures two columns */
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            text-align: right;
+            font-size: 14px;
+            padding-top: 5mm;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .a4-page {
+                border: none;
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="a4-page">
+        <div class="header">
+            <div class="header-row-main">
+                <div class="logo">
+                    <img src="{{sarvoday_marine_logo}}" width="60px" height="40px" alt="Sarvoday Marine">
+                </div>
+                <div class="company-info">
+                    <h1>SARVODAY MARINE SERVICES PVT. LTD.</h1>
+                    <p>F3- Shreesiddhi Plaza Complex, Jafarabad Road, Rajula, Amreli, Gujarat - 385560</p>
+                    <p>Mob. +91-9099120989</p>
+                </div>
+            </div>
+            <div class="header-row-bottom">
+                <div class="left">{{orderId}}</div>
+                <div class="right">Date: {{reportDate}}</div>
+            </div>
+        </div>
+        <div class="content">
+            <p>We, the undersigned Surveyors and Cargo Superintendents, do hereby certify that at the request of
+                <strong>{{customerName}}</strong>, {{customerAddress}}, attended at <strong>{{portLocation}}</strong> on
+                {{orderDate}} in order to inspect the condition of packages and supervise stuffing supervision of
+                consignment <strong>{{productName}} into 1 X {{containerSize}}’ DC</strong> containers Nos.
+                <strong>{{containerNo}}</strong>.
+            </p>
+            <p>We now report as follows:</p>
+            <div class="report-section">
+                <p class="section-title">PARTICULARS OF THE CONSIGNMENT:</p>
+                <div class="report-details">
+                    <div class="report-details-row">
+                        <strong>EXPORTER & MANUFACTURER</strong>:
+                    </div>
+                    <div class="report-details-row">
+                        <strong>{{customerName}}</strong>
+                        <br> {{customerAddress}}
+                    </div>
+                    <div class="report-details-row">
+                        <strong>CONSIGNMENT</strong>:
+                    </div>
+                    <div class="report-details-row">
+                        <strong>{{productName}}</strong>
+                    </div>
+                    <div class="report-details-row">
+                        <strong>QUANTITY</strong>:
+                    </div>
+                    <div class="report-details-row">As Per Packing list equivalent to</div>
+                    <div class="report-details-row">
+                        <strong>NET WEIGHT</strong>:
+                    </div>
+                    <div class="report-details-row">{{netWeight}} KGS.</div>
+                    <div class="report-details-row">
+                        <strong>NO. OF {{typeOfBaggage}}</strong>:
+                    </div>
+                    <div class="report-details-row">{{noOfPkg}} {{baggageName}}</div>
+                    <div class="report-details-row">
+                        <strong>CONDITION OF {{typeOfBaggage}}</strong>:
+                    </div>
+                    <div class="report-details-row">All the MS DRUM were found externally sound and intact.</div>
+                    <div class="report-details-row">
+                        <strong>INVOICE NO.</strong>:
+                    </div>
+                    <div class="report-details-row">-</div>
+                    <div class="report-details-row">
+                        <strong>PORT OF LOADING</strong>:
+                    </div>
+                    <div class="report-details-row">-</div>
+                    <div class="report-details-row">
+                        <strong>PORT OF DISCHARGE</strong>:
+                    </div>
+                    <div class="report-details-row">-</div>
+                    <div class="report-details-row">
+                        <strong>FINAL DESTINATION</strong>:
+                    </div>
+                    <div class="report-details-row">-</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Page 1</p>
+        </div>
+    </div>
+</body>
+
+</html>

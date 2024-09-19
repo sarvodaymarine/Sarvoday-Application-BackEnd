@@ -8,6 +8,7 @@ import { ClientController } from '@src/modules/client_module/application/control
 // } from '@src/modules/client_module/application/middleware/client.middleware';
 import { UserRepositoryImpl } from '@src/modules/authentication_module/infrastructure/persistence/user.repository';
 import { UserService } from '@src/modules/authentication_module/domain/services/user.services';
+import { authMiddleware, authorizeAdminOrSuperAdminRole } from '@src/infrastructure/security/auth.middleware';
 
 const clientRepositoryImpl = new ClientRepositoryImpl();
 const clientModuleAPI = new ClientServices(clientRepositoryImpl);
@@ -18,6 +19,8 @@ const router = Router();
 
 router.post(
   '/addClient',
+  authMiddleware,
+  authorizeAdminOrSuperAdminRole,
   // validateClientRequestBody,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     clientController.addClient(req, res, next),

@@ -14,7 +14,7 @@ export class SalesOrderController {
       const salesOrder = await this.salesOrderServices.createSalesOrder(userId, req.body, userRole);
       res.status(200).json(salesOrder);
     } catch (error) {
-      console.log("error", error);
+      console.log('error', error);
       next(new HttpException(400, (error as Error).message));
     }
   }
@@ -26,8 +26,8 @@ export class SalesOrderController {
       const userRole = req.userRole!;
       const client = await this.salesOrderServices.updateSalesOrder(id, updateDetails, userRole);
       res.json(client);
-    } catch (error) {      
-      console.log("error", error);
+    } catch (error) {
+      console.log('error', error);
       next(new HttpException(400, (error as Error).message));
     }
   }
@@ -36,8 +36,13 @@ export class SalesOrderController {
     try {
       const userRole = req.userRole!;
       const userId = req.userId!;
-
-      const salesOrderList = await this.salesOrderServices.getAllSalesOrders(userRole, userId);
+      const { startDateOfWeek, lastDateOfWeek } = req.params;
+      const salesOrderList = await this.salesOrderServices.getAllSalesOrders(
+        userRole,
+        userId,
+        startDateOfWeek,
+        lastDateOfWeek,
+      );
       res.json(salesOrderList);
     } catch (error) {
       next(new HttpException(400, (error as Error).message));

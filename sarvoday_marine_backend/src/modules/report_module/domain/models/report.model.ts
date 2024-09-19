@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 import {
   ContainerImageConfig,
   ContainerModel,
@@ -11,10 +11,12 @@ import { ReportStatus } from '@src/shared/enum/report_status.enum';
 const ImageConfigSchema = new Schema<ContainerImageConfig>({
   imageName: { type: String, required: true },
   imageId: { type: String, required: true },
-  imageUrlLink: { type: String, required: false, default: '' },
+  imagePath: { type: String, required: false, default: '' },
 });
 
-export interface IContainerModel extends ContainerModel, Document {}
+interface IContainerModel extends ContainerModel {
+  id: string;
+}
 
 const ContainerModelSchema = new Schema<IContainerModel>({
   containerNo: { type: String, required: false },
@@ -36,14 +38,11 @@ const ContainerModelSchema = new Schema<IContainerModel>({
   baggageCondition: { type: String, required: false },
   conclusion: { type: String, required: false },
   containerImages: { type: [ImageConfigSchema], required: false },
+  containerReportPath: { type: String, required: false },
   containerReportUrl: { type: String, required: false },
 });
 
-export interface IServiceContainerModel extends ServiceContainerModel, Document {
-  _id: mongoose.Types.ObjectId;
-}
-
-const ServiceContainerModelSchema = new Schema<IServiceContainerModel>({
+const ServiceContainerModelSchema = new Schema<ServiceContainerModel>({
   serviceName: { type: String, required: true },
   reportStatus: { type: String, required: false, default: 'Pending', enum: ReportStatus },
   containerReports: { type: [ContainerModelSchema], required: false },
@@ -71,5 +70,5 @@ const ReportModelSchema = new Schema<IReportModel>(
 ReportModelSchema.set('toJSON', { getters: true });
 ReportModelSchema.set('toObject', { getters: true });
 
-export const ServiceReportModel = model<IServiceContainerModel>('ServiceReports', ServiceContainerModelSchema);
+export const ServiceReportModel = model<ServiceContainerModel>('ServiceReports', ServiceContainerModelSchema);
 export const ReportModel = model<IReportModel>('Reports', ReportModelSchema);

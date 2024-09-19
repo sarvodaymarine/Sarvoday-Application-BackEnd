@@ -1,17 +1,21 @@
-import mongoose, { ClientSession } from 'mongoose';
+import mongoose from 'mongoose';
 import { LoginCredential, User } from '../../application/interface/user.interface';
 import { UserRepository } from '../../application/interface/user_repository.interface';
 import { UserModel } from '../../domain/models/user.model';
 import { createToken } from '@src/infrastructure/security/token';
 import { BaseUser } from '@src/shared/interface/base_user.interface';
-import { options } from 'joi';
-import { ObjectId } from 'mongodb';
-import { ID } from '@src/shared/valueIbjects/ids';
-
 export class UserRepositoryImpl implements UserRepository {
   async create(user: BaseUser /*options: { session?: ClientSession }*/): Promise<User> {
     const userModel = new UserModel(user);
     return await userModel.save(/*options*/);
+  }
+
+  async findUserByEmailAndMobile(email: string, mobile: string): Promise<User | null> {
+    const query = {
+      $or: [{ email: email }, { mobile: mobile }],
+    };
+    const user = await UserModel.findOne(query);
+    return user ? user.toJSON() : null;
   }
 
   async login(loginCredential: LoginCredential): Promise<string> {
@@ -57,11 +61,7 @@ export class UserRepositoryImpl implements UserRepository {
   }
 
   async update(id: mongoose.Types.ObjectId, updatedUserDetail: Partial<User>): Promise<User | null> {
-    return await UserModel.findOneAndUpdate(
-      { _id: id },
-      { $set: updatedUserDetail },
-      { new: true, runValidators: true },
-    ).exec();
+    return await UserModel.findOneAndUpdate({ _id: id }, { $set: updatedUserDetail }, { new: true }).exec();
   }
 
   async delete(id: mongoose.Types.ObjectId): Promise<void> {
