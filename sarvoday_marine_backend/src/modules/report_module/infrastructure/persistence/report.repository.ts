@@ -30,11 +30,11 @@ export class ReportRepositoryImpl implements ReportRepository {
   ): Promise<void> {
     await ServiceReportModel.updateOne(
       {
-        _id: new mongoose.Types.ObjectId(serviceId),
-        'containerReports._id': new mongoose.Types.ObjectId(containerId),
+        _id: serviceId,
+        'containerReports._id': containerId,
       },
       {
-        $set: { 'containerReports.$.containerReportUrl': path },
+        $set: { 'containerReports.$.containerReportPath': path },
       },
     );
   }

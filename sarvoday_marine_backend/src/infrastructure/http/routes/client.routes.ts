@@ -2,10 +2,6 @@ import { NextFunction, Router, Response, Request } from 'express';
 import { ClientRepositoryImpl } from '@src/modules/client_module/infrastructure/persistence/client.repository';
 import { ClientServices } from '@src/modules/client_module/domain/services/client.services';
 import { ClientController } from '@src/modules/client_module/application/controller/client.controller';
-// import {
-//   validateClientApiParams,
-//   validateUpdatedClientReqData,
-// } from '@src/modules/client_module/application/middleware/client.middleware';
 import { UserRepositoryImpl } from '@src/modules/authentication_module/infrastructure/persistence/user.repository';
 import { UserService } from '@src/modules/authentication_module/domain/services/user.services';
 import { authMiddleware, authorizeAdminOrSuperAdminRole } from '@src/infrastructure/security/auth.middleware';
@@ -21,21 +17,22 @@ router.post(
   '/addClient',
   authMiddleware,
   authorizeAdminOrSuperAdminRole,
-  // validateClientRequestBody,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     clientController.addClient(req, res, next),
 );
 
 router.put(
   '/updateClient/:id',
-  // validateUpdatedClientReqData,
+  authMiddleware,
+  authorizeAdminOrSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     clientController.updateClient(req, res, next),
 );
 
 router.delete(
   '/deleteClient/:id',
-  // validateClientApiParams,
+  authMiddleware,
+  authorizeAdminOrSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     clientController.deleteClient(req, res, next),
 );
@@ -56,12 +53,14 @@ router.delete(
 
 router.get(
   '/getAllClients',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     clientController.getAllClients(req, res, next),
 );
 
 router.get(
   '/getAllClientDetails',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     clientController.getAllClientDetails(req, res, next),
 );

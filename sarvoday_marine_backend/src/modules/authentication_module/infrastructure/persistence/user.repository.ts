@@ -5,9 +5,9 @@ import { UserModel } from '../../domain/models/user.model';
 import { createToken } from '@src/infrastructure/security/token';
 import { BaseUser } from '@src/shared/interface/base_user.interface';
 export class UserRepositoryImpl implements UserRepository {
-  async create(user: BaseUser /*options: { session?: ClientSession }*/): Promise<User> {
+  async create(user: BaseUser): Promise<User> {
     const userModel = new UserModel(user);
-    return await userModel.save(/*options*/);
+    return await userModel.save();
   }
 
   async findUserByEmailAndMobile(email: string, mobile: string): Promise<User | null> {

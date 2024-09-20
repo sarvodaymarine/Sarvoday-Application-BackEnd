@@ -2,13 +2,9 @@ import { NextFunction, Router, Response, Request } from 'express';
 import { EmployeeRepositoryImpl } from '@src/modules/employee_module/infrastructure/persistence/employee.repository';
 import { EmployeeServices } from '@src/modules/employee_module/domain/services/employee.services';
 import { EmployeeController } from '@src/modules/employee_module/application/controller/employee.controller';
-// import {
-//   validateEmployeeApiParams,
-//   validateEmployeeRequestBody,
-//   validateUpdatedEmployeeReqData,
-// } from '@src/modules/employee_module/application/middleware/employee.middleware';
 import { UserRepositoryImpl } from '@src/modules/authentication_module/infrastructure/persistence/user.repository';
 import { UserService } from '@src/modules/authentication_module/domain/services/user.services';
+import { authMiddleware, authorizeAdminOrSuperAdminRole } from '@src/infrastructure/security/auth.middleware';
 
 const employeeRepositoryImpl = new EmployeeRepositoryImpl();
 const userRepositoryImpl = new UserRepositoryImpl();
@@ -19,21 +15,24 @@ const router = Router();
 
 router.post(
   '/addEmployee',
-  // validateEmployeeRequestBody,
+  authMiddleware,
+  authorizeAdminOrSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     employeeController.addEmployeeAPI(req, res, next),
 );
 
 router.put(
   '/updateEmployee/:id',
-  // validateUpdatedEmployeeReqData,
+  authMiddleware,
+  authorizeAdminOrSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     employeeController.updateEmployee(req, res, next),
 );
 
 router.delete(
   '/deleteEmployee/:id',
-  // validateEmployeeApiParams,
+  authMiddleware,
+  authorizeAdminOrSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     employeeController.deleteEmployee(req, res, next),
 );
@@ -54,12 +53,14 @@ router.delete(
 
 router.get(
   '/getAllEmployee',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     employeeController.getAllEmployees(req, res, next),
 );
 
 router.get(
   '/getAllEmployeeDetails',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     employeeController.getAllEmployeesDetails(req, res, next),
 );

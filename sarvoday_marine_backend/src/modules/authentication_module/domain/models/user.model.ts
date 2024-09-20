@@ -62,9 +62,9 @@ UserSchema.methods.setPassword = async function (newPassword: string): Promise<v
 
 UserSchema.methods.isValidPassword = async function (password: string): Promise<Error | boolean> {
   if (this.isFirstLogin) {
-    return true /*await new PasswordHasher().comparePassword(password, this.dummyPassword)*/;
+    return await new PasswordHasher().comparePassword(password, this.dummyPassword);
   } else {
-    return true/*await new PasswordHasher().comparePassword(password, this.password)*/;
+    return await new PasswordHasher().comparePassword(password, this.password);
   }
 };
 

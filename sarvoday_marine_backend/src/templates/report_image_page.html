@@ -14,13 +14,12 @@
 
         @page {
             size: A4;
-            margin: 0mm 20mm;
         }
 
         .a4-page {
-            width: 210mm;
-            height: 297mm;
-            padding: 5mm 15mm;
+            width: 8.27in;
+            height: 11.69in;
+            padding: 5mm 0mm;
             background-color: white;
             border: 1px solid #ccc;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -44,8 +43,7 @@
 
         .logo {
             width: 60px;
-            height: auto;
-            margin-right: 20px;
+            height: 40px;
         }
 
         .company-info {
@@ -54,7 +52,7 @@
         }
 
         .company-info h1 {
-            font-size: 22px;
+            font-size: 26px;
             font-weight: bold;
             color: skyblue;
             line-height: 1.2;
@@ -62,7 +60,7 @@
         }
 
         .company-info p {
-            font-size: 15px;
+            font-size: 16px;
             color: skyblue;
             line-height: 1.2;
             margin-bottom: 2px;
@@ -102,9 +100,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            height: calc(80% - 20mm);
-            margin-right: 10px;
-            margin-left: 10px;
+            height: calc(80% - 30mm);
         }
 
         .image-container {
@@ -114,14 +110,17 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px; /* Adjust padding if needed */
-            box-sizing: border-box; /* Ensure padding does not affect size calculations */
+            padding: 0px;
+            /* Adjust padding if needed */
+            box-sizing: border-box;
+            /* Ensure padding does not affect size calculations */
         }
 
         .image-container img {
             max-width: 100%;
             max-height: 100%;
-            object-fit: contain; /* Ensure the image fits within the container without cropping */
+            object-fit: contain;
+            /* Ensure the image fits within the container without cropping */
             display: block;
             margin: 0 auto;
         }

@@ -29,7 +29,7 @@ export class UserService {
     if (existUser) {
       return await this.userRepositoryImpl.create(user /*options*/);
     } else {
-      throw 'User is already Exist';
+      throw new Error('User is already Exist');
     }
   }
 

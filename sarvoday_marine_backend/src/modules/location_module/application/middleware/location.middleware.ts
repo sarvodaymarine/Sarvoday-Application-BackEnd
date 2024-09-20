@@ -13,13 +13,13 @@ const objectIdValidation = (value: any, helpers: CustomHelpers) => {
 const createLocationSchema = Joi.object({
   locationName: Joi.string().min(3).required(),
   address: Joi.string().min(3).required(),
-  locationCode: Joi.string().min(3).required(),
+  locationCode: Joi.string().min(1).required(),
 });
 
 const updateLocationSchema = Joi.object({
   locationName: Joi.string().min(3).optional(),
   address: Joi.string().min(3).optional(),
-  locationCode: Joi.string().min(3).optional(),
+  locationCode: Joi.string().min(1).optional(),
 });
 
 const LocationParamsSchema = Joi.object({

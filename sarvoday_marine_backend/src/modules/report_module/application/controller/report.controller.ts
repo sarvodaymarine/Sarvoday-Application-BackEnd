@@ -17,7 +17,7 @@ export class ReportController {
   }
 
   async updateServiceReport(req: CustomRequest, res: Response, next: NextFunction): Promise<Response | void> {
-    const { serviceId, reportId } = req.params;
+    const { serviceId, reportId, isReviewed } = req.params;
 
     const userRole = req.userRole;
     const updateDetails = req.body;
@@ -31,6 +31,7 @@ export class ReportController {
           serviceId,
           userRole,
           updateDetails,
+          isReviewed,
           next,
         );
         res.json(client);

@@ -67,7 +67,11 @@ export class ReportGenerator {
   }
 
   public async generatePDF(): Promise<void> {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      headless: false,
+      pipe: true,
+      args: ['--headless', '--disable-gpu', '--no-sandbox'],
+    });
     const page = await browser.newPage();
 
     const template1Html = this.loadAndPopulateTemplate('report_page1.html');
@@ -99,13 +103,24 @@ export class ReportGenerator {
       </html>
     `;
 
+    await page.setViewport({
+      width: 210 * 3.78,
+      height: 297 * 3.78,
+      deviceScaleFactor: 1,
+    });
     await page.setContent(combinedHtml, { waitUntil: 'networkidle0' });
 
     await page.pdf({
       path: this.outputPDFPath,
-      format: 'A4',
+      format: 'A5',
       printBackground: true,
-      margin: { top: '0mm', right: '10mm', bottom: '0mm', left: '10mm' },
+      scale: 1,
+      margin: {
+        top: '0cm',
+        right: '0cm',
+        bottom: '0cm',
+        left: '0cm',
+      },
     });
 
     await browser.close();

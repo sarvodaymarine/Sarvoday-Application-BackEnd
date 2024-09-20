@@ -14,7 +14,7 @@
 
         @page {
             size: A4;
-            margin: 10mm 20mm;
+            margin: 0mm 0mm;
         }
 
         .a4-page {
@@ -43,13 +43,10 @@
         }
 
         .logo {
-            width: 80px;
-            height: 80px;
-            margin-right: 20px;
+            width: 12%;
         }
 
         .company-info {
-            flex-grow: 1;
             text-align: center;
         }
 
@@ -141,7 +138,7 @@
         <div class="header">
             <div class="header-row-main">
                 <div class="logo">
-                    <img src="{{sarvoday_marine_logo}}" width="60px" height="40px" alt="Sarvoday Marine">
+                    <img src="{{sarvoday_marine_logo}}" width=100% height=70px alt="Sarvoday Marine">
                 </div>
                 <div class="company-info">
                     <h1>SARVODAY MARINE SERVICES PVT. LTD.</h1>
@@ -159,8 +156,7 @@
                 <strong>{{customerName}}</strong>, {{customerAddress}}, attended at <strong>{{portLocation}}</strong> on
                 {{orderDate}} in order to inspect the condition of packages and supervise stuffing supervision of
                 consignment <strong>{{productName}} into 1 X {{containerSize}}’ DC</strong> containers Nos.
-                <strong>{{containerNo}}</strong>.
-            </p>
+                <strong>{{containerNo}}</strong>. </p>
             <p>We now report as follows:</p>
             <div class="report-section">
                 <p class="section-title">PARTICULARS OF THE CONSIGNMENT:</p>

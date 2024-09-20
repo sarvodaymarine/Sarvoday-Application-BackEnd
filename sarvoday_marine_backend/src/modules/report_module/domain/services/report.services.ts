@@ -141,6 +141,7 @@ export class ReportServices {
     serviceId: string,
     userRole: string,
     reportDetails: Partial<ServiceContainerModel>,
+    isReviewed: string,
     next: NextFunction,
   ): Promise<void> {
     try {
@@ -177,7 +178,7 @@ export class ReportServices {
               }
             });
 
-            if (!isServiceReportIsPending) {
+            if (!isServiceReportIsPending && isReviewed === 'false') {
               serviceReport.reportStatus = ReportStatus.COMPLETED;
               if (serviceMetaForReport) {
                 serviceMetaForReport.reportStatus = ReportStatus.COMPLETED;
@@ -210,13 +211,13 @@ export class ReportServices {
           ) {
             orderDetails = await this.salesOrderRepository.findByOrderId(report.orderId);
             if (orderDetails) {
-              // if (serviceReport.reportStatus == ReportStatus.REVIEWED) {
+              if (serviceReport.reportStatus == ReportStatus.REVIEWED) {
                 new GenerateServiceContainerPDFService(
                   serviceReport,
                   orderDetails,
                   this.reportRepository,
                 ).containerPDFgeneration();
-              // }
+              }
             } else {
               next(new HttpException(404, 'Internal server error'));
             }

@@ -2,12 +2,7 @@ import { NextFunction, Router, Request, Response } from 'express';
 import { ServiceRepositoryImpl } from '@src/modules/services_module/infrastructure/persistence/service.repository';
 import { ServiceServices } from '@src/modules/services_module/domain/services/service.service';
 import { ServiceController } from '@src/modules/services_module/application/controller/services.controller';
-import { authMiddleware } from '@src/infrastructure/security/auth.middleware';
-// import {
-//   validateServiceData,
-//   validateServiceUpdatedData,
-//   validateServiceApiParams,
-// } from '@src/modules/services_module/application/middleware/services.middleware';
+import { authMiddleware, authorizeAdminOrSuperAdminRole } from '@src/infrastructure/security/auth.middleware';
 
 const serviceRepositoryImpl = new ServiceRepositoryImpl();
 const servicesAPI = new ServiceServices(serviceRepositoryImpl);
@@ -16,34 +11,38 @@ const router = Router();
 
 router.post(
   '/addService',
-  // validateServiceData,
+  authMiddleware,
+  authorizeAdminOrSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     serviceController.addService(req, res, next),
 );
 
 router.put(
   '/updateService/:id',
-  // validateServiceUpdatedData,
+  authMiddleware,
+  authorizeAdminOrSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     serviceController.updateService(req, res, next),
 );
 
 router.delete(
   '/deleteService/:id',
-  // validateServiceApiParams,
+  authMiddleware,
+  authorizeAdminOrSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     serviceController.deleteService(req, res, next),
 );
 
 router.get(
   '/getService/:id',
-  // validateServiceApiParams,
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     serviceController.getServiceById(req, res, next),
 );
 
 router.get(
   '/getServicebyName/:serviceName',
+  authMiddleware,
   // validateServiceApiParams,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     serviceController.getServiceByName(req, res, next),
@@ -51,6 +50,7 @@ router.get(
 
 router.get(
   '/getAllService',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     serviceController.getAllServices(req, res, next),
 );

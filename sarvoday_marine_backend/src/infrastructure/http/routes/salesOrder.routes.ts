@@ -1,8 +1,7 @@
-import { authMiddleware } from '@src/infrastructure/security/auth.middleware';
+import { authMiddleware, authorizeAdminOrSuperAdminRole } from '@src/infrastructure/security/auth.middleware';
 import { ClientRepositoryImpl } from '@src/modules/client_module/infrastructure/persistence/client.repository';
 import { ReportRepositoryImpl } from '@src/modules/report_module/infrastructure/persistence/report.repository';
 import { SalesOrderController } from '@src/modules/sales_order_module/application/controller/salesOrder.controller';
-// import { validateSalesOrderRequestBody } from '@src/modules/sales_order_module/application/middleware/salesOrder.middleware';
 import { SalesOrderServices } from '@src/modules/sales_order_module/domain/services/salesOrder.services';
 import { BusinessConfigRepositoryImpl } from '@src/modules/sales_order_module/infrastructure/persistence/business_config.repository';
 import { SalesOrderRepositoryImpl } from '@src/modules/sales_order_module/infrastructure/persistence/salesOrder.repository';
@@ -27,7 +26,7 @@ const router = Router();
 router.post(
   '/addSalesOrder',
   authMiddleware,
-  // validateSalesOrderRequestBody,
+  authorizeAdminOrSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     salesOrderController.addSalesOrder(req, res, next),
 );
@@ -35,8 +34,7 @@ router.post(
 router.put(
   '/updateSalesOrder/:id',
   authMiddleware,
-  // validateSalesOrderRequestBody,
-
+  authorizeAdminOrSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     salesOrderController.updateSalesOrder(req, res, next),
 );
@@ -50,6 +48,7 @@ router.get(
 
 router.get(
   '/getOrder/:id',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     salesOrderController.getSalesOrderById(req, res, next),
 );

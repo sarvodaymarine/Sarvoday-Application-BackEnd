@@ -406,6 +406,7 @@ export class SalesOrderServices {
         service.totalPrice = undefined;
       });
       order.totalTax = undefined;
+      order.totalInvoice = undefined;
     }
 
     return order;

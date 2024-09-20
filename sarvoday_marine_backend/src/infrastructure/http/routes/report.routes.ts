@@ -20,22 +20,22 @@ router.post(
 );
 
 router.put(
-  '/updateReport/:reportId/serviceReport/:serviceId',
-  // authMiddleware,
-  // validateSalesOrderRequestBody,
-
+  '/updateReport/:reportId/serviceReport/:serviceId/:isReviewed',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     reprotController.updateServiceReport(req, res, next),
 );
 
 router.get(
   '/getReport/:orderId',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     reprotController.getReportById(req, res, next),
 );
 
 router.get(
   '/getServiceReport/:id',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     reprotController.getServiceReportById(req, res, next),
 );

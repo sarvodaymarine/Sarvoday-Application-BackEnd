@@ -95,8 +95,6 @@ export class UserController {
     }
   }
 
-  async forgotPassword(req: Request, res: Response, next: NextFunction) {}
-
   async activeDeActiveUserAuth(req: Request, res: Response, next: NextFunction) {
     const id = req.params.id;
     const { isActive } = req.body;
