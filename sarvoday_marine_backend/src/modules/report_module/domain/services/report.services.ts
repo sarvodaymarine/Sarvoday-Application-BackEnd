@@ -214,11 +214,11 @@ export class ReportServices {
             orderDetails = await this.salesOrderRepository.findByOrderId(report.orderId);
             if (orderDetails) {
               if (serviceReport.reportStatus == ReportStatus.REVIEWED) {
-                // new GenerateServiceContainerPDFService(
-                //   serviceReport,
-                //   orderDetails,
-                //   this.reportRepository,
-                // ).containerPDFgeneration();
+                new GenerateServiceContainerPDFService(
+                  serviceReport,
+                  orderDetails,
+                  this.reportRepository,
+                ).containerPDFgeneration();
               }
             } else {
               next(new HttpException(404, 'Internal server error'));

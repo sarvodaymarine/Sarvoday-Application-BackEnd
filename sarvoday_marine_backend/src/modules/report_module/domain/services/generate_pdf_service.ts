@@ -53,7 +53,7 @@ export class GenerateServiceContainerPDFService {
       const reportDate: string = this.formatDateWithSuffix(date);
       const s3instance = new ImageUploadService();
 
-      const clientInfo = await new ClientRepositoryImpl().findById(this.orderDetail.clientId);
+      const clientInfo = await new ClientRepositoryImpl().findByUserId(this.orderDetail.clientId);
       const sarvoday_marine_logo = await s3instance.getSignedAWSFileOrIMageUrl('sarvoday_marine.png');
       const sarvoday_marine_stamp = await s3instance.getSignedAWSFileOrIMageUrl('sarvoday_marine.png');
 

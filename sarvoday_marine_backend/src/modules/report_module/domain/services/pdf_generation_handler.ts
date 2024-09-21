@@ -110,11 +110,6 @@ export class ReportGenerator {
       </html>
     `;
 
-    await page.setViewport({
-      width: 210 * 3.78,
-      height: 297 * 3.78,
-      deviceScaleFactor: 1,
-    });
     await page.setContent(combinedHtml, { waitUntil: 'networkidle0' });
 
     await page.pdf({

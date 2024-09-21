@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Report Images</title>
     <style>
         * {
@@ -97,10 +97,9 @@
         }
 
         .image-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            height: calc(80% - 30mm);
+            display: flex;
+            position: relative;
+            left: 40px;
         }
 
         .image-container {
@@ -150,6 +149,15 @@
                 margin: 0;
             }
         }
+
+        table,
+        th,
+        td {
+            width: 50px;
+            height: 20px;
+            border: 1px solid;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -158,11 +166,14 @@
         <div class="header">
             <div class="header-row-main">
                 <div class="logo">
-                    <img src="{{sarvoday_marine_logo}}" width="60px" height="40px" alt="Sarvoday Marine">
+                    <img src="{{sarvoday_marine_logo}}" width="60px" height="40px" alt="Sarvoday Marine" />
                 </div>
                 <div class="company-info">
                     <h1>SARVODAY MARINE SERVICES PVT. LTD.</h1>
-                    <p>F3- Shreesiddhi Plaza Complex, Jafarabad Road, Rajula, Amreli, Gujarat - 385560</p>
+                    <p>
+                        F3- Shreesiddhi Plaza Complex, Jafarabad Road, Rajula, Amreli,
+                        Gujarat - 385560
+                    </p>
                     <p>Mob. +91-9099120989</p>
                 </div>
             </div>
@@ -177,7 +188,9 @@
                 <p>Annexure – I</p>
             </div>
             <div class="image-grid">
-                {{imageGrid}}
+                <table class="table">
+                    {{imageGrid}}
+                </table>
             </div>
         </div>
     </div>
