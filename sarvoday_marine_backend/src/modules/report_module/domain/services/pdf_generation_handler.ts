@@ -53,23 +53,23 @@ export class ReportGenerator {
     populatedHtml = populatedHtml.replace(/{{reportDate}}/g, this.data.reportDate);
     populatedHtml = populatedHtml.replace(/{{containerNo}}/g, this.data.containerNo);
     let imageGridHtml = '';
-    images.forEach((image, index) => {
-      if (image.url) {
+    for (let i = 0; i < images.length; i + 2) {
+      if (images[i].url) {
         imageGridHtml += `
       <tr class="table-row">
         <td>
-          <img width="350px" height="250px" src="${image.url}" />
+          <img width="350px" height="250px" src="${images[i].url}" />
         </td>
         <td>
-          ${index + 1 < images.length ? `<img width="350px" height="250px" src="${images[index + 1].url}" />` : ''}
+          ${i + 1 < images.length ? `<img width="350px" height="250px" src="${images[i + 1].url}" />` : ''}
         </td>
       </tr>
       <tr>
-        <td>${image.name}</td>
-        ${index + 1 < images.length ? `<td>${images[index + 1].name}</td>` : ''}
+        <td>${images[i].name}</td>
+        ${i + 1 < images.length ? `<td>${images[i + 1].name}</td>` : ''}
       </tr>`;
       }
-    });
+    }
     return populatedHtml.replace(/{{imageGrid}}/g, imageGridHtml);
   }
 
