@@ -56,7 +56,7 @@ class App {
   private initialiseDatabaseconnection(): void {
     // const { MONGO_USER, MONGO_PASSWORD, MONGO_PATH } = process.env;
     // mongoose.connect(`mongodb://${MONGO_USER}:${MONGO_PASSWORD}${MONGO_PATH}`);
-    mongoose.connect('mongodb://localhost:27017/sarvoday_marine_db');
+    mongoose.connect(`${process.env.MONGO_PATH ?? ''}/sarvoday_marine_db`);
   }
 
   public listen() {

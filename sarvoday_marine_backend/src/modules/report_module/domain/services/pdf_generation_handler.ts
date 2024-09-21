@@ -53,14 +53,21 @@ export class ReportGenerator {
     populatedHtml = populatedHtml.replace(/{{reportDate}}/g, this.data.reportDate);
     populatedHtml = populatedHtml.replace(/{{containerNo}}/g, this.data.containerNo);
     let imageGridHtml = '';
-    images.forEach((image) => {
+    images.forEach((image, index) => {
       if (image.url) {
         imageGridHtml += `
-          <div class="image-container">
-            <img src="${image.url}"width="300" height="200" alt="${image.name}">
-            <div class="image-name">${image.name}</div>
-          </div>
-        `;
+      <tr class="table-row">
+        <td>
+          <img width="350px" height="250px" src="${image.url}" />
+        </td>
+        <td>
+          ${index + 1 < images.length ? `<img width="350px" height="250px" src="${images[index + 1].url}" />` : ''}
+        </td>
+      </tr>
+      <tr>
+        <td>${image.name}</td>
+        ${index + 1 < images.length ? `<td>${images[index + 1].name}</td>` : ''}
+      </tr>`;
       }
     });
     return populatedHtml.replace(/{{imageGrid}}/g, imageGridHtml);
@@ -79,7 +86,7 @@ export class ReportGenerator {
     const template3Html = this.loadAndPopulateTemplate('report_page3.html');
     const template4Html = this.loadTemplate('report_image_page.html');
 
-    const imagesPerPage = 8;
+    const imagesPerPage = 6;
     const totalImages = this.data.images.length;
     const pages: string[] = [];
 
@@ -112,7 +119,7 @@ export class ReportGenerator {
 
     await page.pdf({
       path: this.outputPDFPath,
-      format: 'A5',
+      format: 'A4',
       printBackground: true,
       scale: 1,
       margin: {

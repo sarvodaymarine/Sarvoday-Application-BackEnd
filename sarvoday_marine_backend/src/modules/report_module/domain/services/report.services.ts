@@ -157,7 +157,7 @@ export class ReportServices {
             (sr: ServiceContainerMetaData) => sr.serviceId === serviceId,
           );
           // Partial updates for report fields
-          if (isDefined(reportDetails.reportStatus) && isReviewed === "true") {
+          if (isDefined(reportDetails.reportStatus) && isReviewed === 'true') {
             if (reportDetails.reportStatus === ReportStatus.REVIEWED) {
               if (userRole === UserRoles.ADMIN || userRole === UserRoles.SUPERADMIN) {
                 serviceReport.reportStatus = reportDetails.reportStatus;
@@ -178,19 +178,19 @@ export class ReportServices {
               }
             });
 
-            if(isReviewed === 'false') {
-             if (!isServiceReportIsPending) {
-              serviceReport.reportStatus = ReportStatus.COMPLETED;
-              if (serviceMetaForReport) {
-                serviceMetaForReport.reportStatus = ReportStatus.COMPLETED;
-              }
-            } else {
-              serviceReport.reportStatus = ReportStatus.PENDING;
-              if (serviceMetaForReport) {
-                serviceMetaForReport.reportStatus = ReportStatus.PENDING;
+            if (isReviewed === 'false') {
+              if (!isServiceReportIsPending) {
+                serviceReport.reportStatus = ReportStatus.COMPLETED;
+                if (serviceMetaForReport) {
+                  serviceMetaForReport.reportStatus = ReportStatus.COMPLETED;
+                }
+              } else {
+                serviceReport.reportStatus = ReportStatus.PENDING;
+                if (serviceMetaForReport) {
+                  serviceMetaForReport.reportStatus = ReportStatus.PENDING;
+                }
               }
             }
-          }
 
             if (serviceReport.containerReports && reportDetails.containerReports) {
               const updatedReports = serviceReport.containerReports.map((element) => {
@@ -262,11 +262,17 @@ export class ReportServices {
     if (serviceResponse) {
       if (serviceResponse.containerReports) {
         await Promise.all(
-          serviceResponse.containerReports.map(async (containerReport: any) => {
+          serviceResponse.containerReports.map(async (containerReport) => {
+            if (containerReport.containerReportPath) {
+              containerReport.containerReportUrl = await new ImageUploadService().getSignedAWSFileOrIMageUrl(
+                containerReport.containerReportPath,
+              );
+            }
+
             if (containerReport.containerImages) {
               await Promise.all(
-                containerReport.containerImages.map(async (imageDetail: any) => {
-                  if (imageDetail.imagePath && imageDetail.imagePath !== '') {
+                containerReport.containerImages.map(async (imageDetail) => {
+                  if (imageDetail.imagePath) {
                     imageDetail.imageUrlLink = await new ImageUploadService().getSignedAWSFileOrIMageUrl(
                       imageDetail.imagePath,
                     );
