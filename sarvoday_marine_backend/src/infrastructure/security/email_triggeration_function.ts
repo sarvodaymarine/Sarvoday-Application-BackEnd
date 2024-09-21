@@ -1,20 +1,20 @@
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+import { google } from 'googleapis';
+dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  // host: 'smtp.gmail.com',
-  service: 'gmail',
-  port: 587,
-  secure: false,
-  // service: 'smtp.gmail.com',
-  auth: {
-    user: 'jainish.sarvodaymarine@gmail.com',
-    pass: 'JainishG@08102000',
-  },
-});
+const CLIENT_ID = process.env.EMAIL_CLIENT_ID;
+const CLIENT_SECRET = process.env.EMAIL_CLIENT_SECREAT;
+const REDIRECT_URI = 'https://developers.google.com/oauthplayground';
+const REFRESH_TOKEN = process.env.EMAIL_REFRESH_TOKEN;
+const GMAIL_USER = process.env.NODE_MAILER_USER;
+
+const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
 
 export const sendEmail = async (email: string, name: string, dummyPassowrd: string): Promise<void> => {
   const mailOptions = {
-    from: '"Sarvoday Marine" <jainish.sarvodaymarine@gmail.com>',
+    from: '"Sarvoday Marine" <sarvodaydev@gmail.com>',
     to: email,
     subject: 'Access Details for your Sarvoday Marine Account',
     html: `
@@ -78,6 +78,21 @@ export const sendEmail = async (email: string, name: string, dummyPassowrd: stri
   };
 
   try {
+    const accessToken = await oAuth2Client.getAccessToken();
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        type: 'OAuth2',
+        user: GMAIL_USER,
+        clientId: CLIENT_ID,
+        clientSecret: CLIENT_SECRET,
+        refreshToken: REFRESH_TOKEN,
+        accessToken: accessToken.token,
+      },
+    } as nodemailer.TransportOptions);
+
     await transporter.sendMail(mailOptions);
   } catch (error) {
     console.error('Error sending email:', error);

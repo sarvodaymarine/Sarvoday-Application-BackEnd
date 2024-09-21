@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 interface CreateUser extends BaseUser {
   password: string;
   dummyPassword: string;
+  dummyText: string;
   isFirstLogin: boolean;
   createdAt: Date;
   updatedAt: Date;

@@ -20,6 +20,7 @@ const UserSchema: Schema = new Schema(
     password: { type: String },
 
     dummyPassword: { type: String },
+    dummyText: { type: String },
     isFirstLogin: { type: Boolean, default: true },
     isActive: { type: Boolean, required: true },
     isDeleted: { type: Boolean, required: true },
@@ -38,6 +39,7 @@ const UserSchema: Schema = new Schema(
       transform: (doc, ret) => {
         delete ret.password;
         delete ret.dummyPassword;
+        delete ret.dummyText;
         return ret;
       },
       virtuals: true,
@@ -48,6 +50,7 @@ const UserSchema: Schema = new Schema(
 UserSchema.pre<UserDocument>('save', async function (next) {
   if (this.isFirstLogin) {
     const dummyPassword = Math.random().toString(36).slice(-8);
+    this.dummyText = dummyPassword;
     this.dummyPassword = await new PasswordHasher().hashPassword(dummyPassword);
   }
   next();
@@ -56,6 +59,7 @@ UserSchema.pre<UserDocument>('save', async function (next) {
 UserSchema.methods.setPassword = async function (newPassword: string): Promise<void> {
   this.password = await new PasswordHasher().hashPassword(newPassword);
   this.dummyPassword = '';
+  this.dummyText = '';
   this.isFirstLogin = false;
   await this.save();
 };

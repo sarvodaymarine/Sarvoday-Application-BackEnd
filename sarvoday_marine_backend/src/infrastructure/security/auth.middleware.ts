@@ -51,13 +51,15 @@ export async function authMiddleware(req: CustomRequest, res: Response, next: Ne
 export const authorizeAdminOrSuperAdminRole = (req: CustomRequest, res: Response, next: NextFunction) => {
   if (req.userRole != null && (req.userRole == UserRoles.ADMIN || req.userRole == UserRoles.SUPERADMIN)) {
     next();
+  } else {
+    next(new HttpException(403, "Permission Denied! You don't have access"));
   }
-  next(new HttpException(403, "Permission Denied! You don't have access"));
 };
 
 export const authorizeSuperAdminRole = (req: CustomRequest, res: Response, next: NextFunction) => {
   if (req.userRole != null && req.userRole == UserRoles.SUPERADMIN) {
     next();
+  } else {
+    next(new HttpException(403, "Permission Denied! You don't have access"));
   }
-  next(new HttpException(403, "Permission Denied! You don't have access"));
 };

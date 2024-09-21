@@ -9,4 +9,5 @@ export interface ClientRepository {
   getAllClients(): Promise<Client[] | null>;
   getAllClientsDetails(): Promise<ClientResponse[] | null>;
   getAllClientsForEmployees(): Promise<ClientResponseBasedOnUser[] | null>;
+  findByUserId(userId: Types.ObjectId): Promise<Client | null>;
 }

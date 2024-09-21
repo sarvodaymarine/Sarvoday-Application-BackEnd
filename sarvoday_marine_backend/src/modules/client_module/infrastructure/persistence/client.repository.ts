@@ -27,6 +27,11 @@ export class ClientRepositoryImpl implements ClientRepository {
     return client ? (client.toObject() as Client) : null;
   }
 
+  async findByUserId(userId: Types.ObjectId): Promise<Client | null> {
+    const client = await ClientModel.findOne({userId});
+    return client ? (client.toObject() as Client) : null;
+  }
+
   async getAllClients(): Promise<Client[] | null> {
     return await ClientModel.find();
   }

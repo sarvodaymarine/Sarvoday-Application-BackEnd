@@ -16,6 +16,7 @@ import {
 } from '@src/modules/report_module/application/interface/report.interface';
 import { Service } from '@src/modules/services_module/application/interface/services.interface';
 import { ServiceRepository } from '@src/modules/services_module/application/interface/services_repository.interface';
+import { ClientRepositoryImpl } from '@src/modules/client_module/infrastructure/persistence/client.repository';
 
 export class SalesOrderServices {
   constructor(
@@ -40,7 +41,7 @@ export class SalesOrderServices {
           const clientService = clientServices.find((cs) => {
             return !isFromUpdate
               ? cs.serviceId === service.serviceId.toString()
-              : cs._id.toString() === service.serviceId.toString();
+              : cs._id.toString() === service.serviceId.toString() || cs.serviceId === service.serviceId.toString();
           });
           if (!clientService) {
             throw new Error(`Service with ID ${service.serviceId} not found for client ${clientName}`);
@@ -80,7 +81,7 @@ export class SalesOrderServices {
   }
 
   async createSalesOrder(userId: Types.ObjectId, data: CreateSalesOrder, userRole: string): Promise<void> {
-    const client = await this.clientRepository.findById(data.clientId);
+    const client = await this.clientRepository.findByUserId(data.clientId);
     if (!client) {
       throw new Error(`Client with ID ${data.clientId} not found`);
     }
@@ -133,7 +134,7 @@ export class SalesOrderServices {
       throw new Error(`Sales Order doesn't found`);
     }
 
-    const client = await this.clientRepository.findById(updateDetails.clientId ?? orderDetail.clientId);
+    const client = await this.clientRepository.findByUserId(updateDetails.clientId ?? orderDetail.clientId);
     if (!client) {
       throw new Error(`Client with ID ${orderDetail.clientId} not found`);
     }
@@ -275,11 +276,15 @@ export class SalesOrderServices {
     const serviceReports: ServiceContainerModel[] = [];
     const promise: Promise<ServiceContainerMetaData>[] = [];
     for (const service of data.services ?? []) {
-      const serviceFromClient = clientServicesList.find((cs) =>
-        isFromUpdate
-          ? cs.serviceId === service.serviceId.toString()
-          : cs._id.toString() === service.serviceId.toString(),
-      );
+      const serviceFromClient = clientServicesList.find((cs) => {
+        console.log('cs.serviceId ', cs.serviceId.toString());
+        console.log('service.serviceId ', service.serviceId.toString());
+        console.log('cs.serviceId ', service.serviceId.toString());
+        console.log('cs._id ', cs._id.toString());
+        return isFromUpdate
+          ? cs.serviceId === service.serviceId.toString() || cs._id.toString() === service.serviceId.toString()
+          : cs._id.toString() === service.serviceId.toString();
+      });
 
       if (!serviceFromClient) {
         console.error(`Service from client not found for service: ${service.serviceName}`);
@@ -358,32 +363,37 @@ export class SalesOrderServices {
   ): Promise<SalesOrder[] | null> {
     let filter = {};
     console.log('userRole', userRole);
+    console.log('userId', userId);
     const startDate = new Date(startDateOfWeek).setHours(0, 0, 0, 0);
     const endDate = new Date(lastDateOfWeek).setHours(23, 59, 59, 59);
 
     const query = { $gte: startDate, $lte: endDate };
 
     switch (userRole) {
-      case 'admin':
+      case UserRoles.ADMIN:
         filter = {
           adminId: userId,
           orderDate: query,
         };
         break;
-      case 'client':
+      case UserRoles.CLIENT:
         filter = {
           clientId: userId,
           orderDate: query,
         };
         break;
-      case 'employee':
+      case UserRoles.EMPLOYEE:
         filter = {
-          'employees.employeeId': userId,
-          'employees.isAssigned': true,
+          employees: {
+            $elemMatch: {
+              employeeId: userId,
+              isAssigned: true,
+            },
+          },
           orderDate: query,
         };
         break;
-      case 'superadmin':
+      case UserRoles.SUPERADMIN:
         filter = {
           orderDate: query,
         };

@@ -157,7 +157,7 @@ export class ReportServices {
             (sr: ServiceContainerMetaData) => sr.serviceId === serviceId,
           );
           // Partial updates for report fields
-          if (isDefined(reportDetails.reportStatus)) {
+          if (isDefined(reportDetails.reportStatus) && isReviewed === "true") {
             if (reportDetails.reportStatus === ReportStatus.REVIEWED) {
               if (userRole === UserRoles.ADMIN || userRole === UserRoles.SUPERADMIN) {
                 serviceReport.reportStatus = reportDetails.reportStatus;
@@ -178,7 +178,8 @@ export class ReportServices {
               }
             });
 
-            if (!isServiceReportIsPending && isReviewed === 'false') {
+            if(isReviewed === 'false') {
+             if (!isServiceReportIsPending) {
               serviceReport.reportStatus = ReportStatus.COMPLETED;
               if (serviceMetaForReport) {
                 serviceMetaForReport.reportStatus = ReportStatus.COMPLETED;
@@ -189,6 +190,7 @@ export class ReportServices {
                 serviceMetaForReport.reportStatus = ReportStatus.PENDING;
               }
             }
+          }
 
             if (serviceReport.containerReports && reportDetails.containerReports) {
               const updatedReports = serviceReport.containerReports.map((element) => {
@@ -212,11 +214,11 @@ export class ReportServices {
             orderDetails = await this.salesOrderRepository.findByOrderId(report.orderId);
             if (orderDetails) {
               if (serviceReport.reportStatus == ReportStatus.REVIEWED) {
-                new GenerateServiceContainerPDFService(
-                  serviceReport,
-                  orderDetails,
-                  this.reportRepository,
-                ).containerPDFgeneration();
+                // new GenerateServiceContainerPDFService(
+                //   serviceReport,
+                //   orderDetails,
+                //   this.reportRepository,
+                // ).containerPDFgeneration();
               }
             } else {
               next(new HttpException(404, 'Internal server error'));
