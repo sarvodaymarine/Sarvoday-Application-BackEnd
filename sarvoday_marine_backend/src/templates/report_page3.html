@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Page3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 5mm 20mm;
+        }
+
+        .a4-page {
+            display: flex;
+            flex-direction: column;
+            width: 210mm;
+            height: 297mm;
+            padding: 5mm 15mm;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+        }
+
+        .a4-page>*:last-child {
+            margin-top: auto;
+        }
+
+        .header {
+            padding-bottom: 5mm;
+        }
+
+        .header-row-main {
+            display: flex;
+            align-items: center;
+            padding-left: 5%;
+            padding-right: 5%;
+            margin-bottom: 5px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 40px;
+            margin-right: 20px;
+        }
+
+        .company-info {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .company-info h1 {
+            font-size: 22px;
+            font-weight: bold;
+            color: skyblue;
+            line-height: 1.2;
+            margin-bottom: 3px;
+        }
+
+        .company-info p {
+            font-size: 15px;
+            color: skyblue;
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .header-row-bottom {
+            display: flex;
+            justify-content: space-between;
+            padding-left: 5%;
+            padding-right: 5%;
+            font-size: 16px;
+            color: skyblue;
+            font-weight: bold;
+        }
+
+        .content {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-top: 5mm;
+        }
+
+        .content p {
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 18px;
+        }
+
+        .footer {
+            text-align: right;
+            font-size: 14px;
+            padding-top: 5mm;
+        }
+
+        .stamp-logo {
+            margin-top: 10mm;
+            height: 80px;
+            width: 80px;
+            background-color: lightgray;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .a4-page {
+                border: none;
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="a4-page">
+        <div class="header">
+            <div class="header-row-main">
+                <div class="logo">
+                    <img src={{sarvoday_marine_logo}} width="60ox" height="40px" alt="Sarvoday Marine">
+                </div>
+                <div class="company-info">
+                    <h1>SARVODAY MARINE SERVICES PVT. LTD.</h1>
+                    <p>F3- Shreesiddhi Plaza Complex, Jafarabad Road, Rajula, Amreli, Gujarat - 385560</p>
+                    <p>Mob. +91-9099120989</p>
+                </div>
+            </div>
+            <div class="header-row-bottom">
+                <div class="left">{{orderId}}</div>
+                <div class="right">Date: {{reportDate}}
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <p class="section-title">CONCLUSION:</p>
+            <p>•{{conclusion}}</p>
+            <br>
+            <br>
+            <p>ISSUED WITHOUT PREJUDICE</p>
+            <p class="section-title">FOR, SARVODAY MARINE SERVICES</p>
+            <div class="stamp-logo">
+                <img src={{company_signed_stamp}} width="100px" height="100px" alt="Signed Stamp Logo">
+            </div>
+            <p class="section-title">Encl : Annexure – I</p>
+        </div>
+        <div class="footer">
+            <p>Page 3</p>
+        </div>
+    </div>
+</body>
+
+</html>
