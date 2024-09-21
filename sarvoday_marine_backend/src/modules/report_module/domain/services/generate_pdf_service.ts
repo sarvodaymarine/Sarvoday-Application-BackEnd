@@ -54,8 +54,8 @@ export class GenerateServiceContainerPDFService {
       const s3instance = new ImageUploadService();
 
       const clientInfo = await new ClientRepositoryImpl().findByUserId(this.orderDetail.clientId);
-      const sarvoday_marine_logo = await s3instance.getSignedAWSFileOrIMageUrl('sarvoday_marine.png');
-      const sarvoday_marine_stamp = await s3instance.getSignedAWSFileOrIMageUrl('sarvoday_marine.png');
+      const sarvoday_marine_logo = await s3instance.getSignedAWSFileOrIMageUrl('Picture1.png');
+      const sarvoday_marine_stamp = await s3instance.getSignedAWSFileOrIMageUrl('Picture1.png');
 
       if (this.serviceReport.containerReports) {
         const promise2: any = [];
@@ -175,7 +175,7 @@ export class GenerateServiceContainerPDFService {
       console.log('response', response.status);
       if (response.status === 200) {
         await reportRepository.updateServiceContainerPDFPath(serviceId, containerId, s3Path);
-        // fs.unlinkSync(tempFilePath);
+        fs.unlinkSync(tempFilePath);
       } else {
         console.error(`Failed to upload file. Status code: ${response.status}`);
       }

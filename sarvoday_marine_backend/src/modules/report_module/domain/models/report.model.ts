@@ -38,7 +38,7 @@ const ContainerModelSchema = new Schema<IContainerModel>({
   baggageCondition: { type: String, required: false },
   conclusion: { type: String, required: false },
   containerImages: { type: [ImageConfigSchema], required: false },
-  containerReportPath: { type: String, required: false },
+  containerReportPath: { type: String, required: false, default: '' },
   containerReportUrl: { type: String, required: false },
 });
 

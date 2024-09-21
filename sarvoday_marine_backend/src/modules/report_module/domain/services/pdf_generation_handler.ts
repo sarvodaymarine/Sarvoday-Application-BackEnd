@@ -52,10 +52,10 @@ export class ReportGenerator {
     populatedHtml = populatedHtml.replace(/{{orderId}}/g, this.data.orderId);
     populatedHtml = populatedHtml.replace(/{{reportDate}}/g, this.data.reportDate);
     populatedHtml = populatedHtml.replace(/{{containerNo}}/g, this.data.containerNo);
-    let imageGridHtml = '';
-    for (let i = 0; i < images.length; i + 2) {
+    const imageGridChunks = [];
+    for (let i = 0; i < images.length; i += 2) {
       if (images[i].url) {
-        imageGridHtml += `
+        imageGridChunks.push(`
       <tr class="table-row">
         <td>
           <img width="350px" height="250px" src="${images[i].url}" />
@@ -67,9 +67,11 @@ export class ReportGenerator {
       <tr>
         <td>${images[i].name}</td>
         ${i + 1 < images.length ? `<td>${images[i + 1].name}</td>` : ''}
-      </tr>`;
+      </tr>`);
       }
     }
+
+    const imageGridHtml = imageGridChunks.join('');
     return populatedHtml.replace(/{{imageGrid}}/g, imageGridHtml);
   }
 
