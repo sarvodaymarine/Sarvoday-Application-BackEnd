@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { SalesOrder } from '@src/modules/sales_order_module/application/interface/salesOrder.interface';
 import { ServiceContainerModel } from '../../application/interface/report.interface';
 import { ReportRepository } from '../../application/interface/report_repository.interface';
 import { ReportGenerator, TemplateData } from './pdf_generation_handler';
+import { SalesOrder } from '@src/modules/sales_order_module/application/interface/salesOrder.interface';
 import { ClientRepositoryImpl } from '@src/modules/client_module/infrastructure/persistence/client.repository';
 import { ImageUploadService } from '@src/s3_services/s3_image_upload_service';
 import * as os from 'os';
@@ -49,6 +49,7 @@ export class GenerateServiceContainerPDFService {
 
   public async containerPDFgeneration(): Promise<void> {
     try {
+      console.log('service start');
       const date: Date = new Date();
       const reportDate: string = this.formatDateWithSuffix(date);
       const s3instance = new ImageUploadService();
@@ -121,12 +122,16 @@ export class GenerateServiceContainerPDFService {
               });
             }
             const generator = new ReportGenerator(tempFilePath, data);
+            console.log('service start 2');
             promise2.push(generator.generatePDF());
+            console.log('service start 3');
           } else {
             throw new Error('having issue at the time of generate pdf, Customer not found');
           }
         }
+        console.log('service start 4');
         await Promise.all(promise2);
+        console.log('service start 5');
         const promise3: any = [];
         reportFolderMap.forEach((reportFileInfo) => {
           if (this.serviceReport._id) {
@@ -142,8 +147,9 @@ export class GenerateServiceContainerPDFService {
             );
           }
         });
-
+        console.log('service start 6');
         await Promise.all(promise3);
+        console.log('service start 7');
       } else {
         throw new Error('having issue at the time of generate pdf, Service Container details not found');
       }
@@ -162,6 +168,7 @@ export class GenerateServiceContainerPDFService {
     reportRepository: ReportRepository,
   ): Promise<void> {
     try {
+      console.log('service start .........8');
       const signedUrl = await s3Service.putSignedUrlforAWsImageUpload(s3Path);
       const fileBuffer = fs.readFileSync(tempFilePath);
       console.log('tempFilePath', tempFilePath);
@@ -174,8 +181,11 @@ export class GenerateServiceContainerPDFService {
       });
       console.log('response', response.status);
       if (response.status === 200) {
+        console.log('service start ............9');
         await reportRepository.updateServiceContainerPDFPath(serviceId, containerId, s3Path);
+        console.log('service start  ............10');
         fs.unlinkSync(tempFilePath);
+        console.log('service start ................11');
       } else {
         console.error(`Failed to upload file. Status code: ${response.status}`);
       }

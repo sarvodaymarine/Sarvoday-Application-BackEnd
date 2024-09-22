@@ -26,7 +26,7 @@ export class ReportController {
         next(new HttpException(401, 'Unauthorised'));
       } else {
         console.log('updateDetails', updateDetails);
-        const client = await this.reportServices.updateServiceReport(
+        const response = await this.reportServices.updateServiceReport(
           reportId,
           serviceId,
           userRole,
@@ -34,7 +34,9 @@ export class ReportController {
           isReviewed,
           next,
         );
-        res.json(client);
+        if (response) {
+          res.json(response);
+        }
       }
     } catch (error) {
       console.log('error', error);

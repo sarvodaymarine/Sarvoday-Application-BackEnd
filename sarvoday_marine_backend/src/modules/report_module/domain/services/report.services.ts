@@ -143,15 +143,17 @@ export class ReportServices {
     reportDetails: Partial<ServiceContainerModel>,
     isReviewed: string,
     next: NextFunction,
-  ): Promise<void> {
+  ): Promise<ServiceContainerModel | null | undefined> {
     try {
       const report = await this.reportRepository.findById(new mongoose.Types.ObjectId(reportId));
       if (!report) {
         next(new HttpException(404, 'Report not found'));
+        return;
       } else {
         const serviceReport = await this.reportRepository.findServiceReportById(new mongoose.Types.ObjectId(serviceId));
         if (!serviceReport) {
           next(new HttpException(404, 'service report not found'));
+          return;
         } else {
           const serviceMetaForReport = report.serviceReports?.find(
             (sr: ServiceContainerMetaData) => sr.serviceId === serviceId,
@@ -159,19 +161,31 @@ export class ReportServices {
           // Partial updates for report fields
           if (isDefined(reportDetails.reportStatus) && isReviewed === 'true') {
             if (reportDetails.reportStatus === ReportStatus.REVIEWED) {
-              if (userRole === UserRoles.ADMIN || userRole === UserRoles.SUPERADMIN) {
+              if ((userRole === UserRoles.ADMIN && !reportDetails.isEdited) || userRole === UserRoles.SUPERADMIN) {
                 serviceReport.reportStatus = reportDetails.reportStatus;
                 if (serviceMetaForReport) {
                   serviceMetaForReport.reportStatus = reportDetails.reportStatus;
                 }
               } else {
-                next(new HttpException(403, 'Access denied. You cannot have acces to reviewed the report'));
+                next(new HttpException(403, 'Access denied. You cannot have access to reviewed the report'));
+                return;
               }
             }
           }
 
           if (isDefined(reportDetails.containerReports) && reportDetails.containerReports) {
             let isServiceReportIsPending: boolean = false;
+
+            if (serviceReport.containerReports && reportDetails.containerReports) {
+              const updatedReports = serviceReport.containerReports.map((element) => {
+                const matchingReport = reportDetails.containerReports?.find(
+                  (element2) => element._id?.toString() === element2.id?.toString(),
+                );
+                return matchingReport || element;
+              });
+              serviceReport.containerReports = updatedReports;
+            }
+
             reportDetails.containerReports.forEach((element) => {
               if (!validateContainerReportDetails(element)) {
                 isServiceReportIsPending = true;
@@ -191,21 +205,10 @@ export class ReportServices {
                 }
               }
             }
-
-            if (serviceReport.containerReports && reportDetails.containerReports) {
-              const updatedReports = serviceReport.containerReports.map((element) => {
-                const matchingReport = reportDetails.containerReports?.find(
-                  (element2) => element._id?.toString() === element2.id?.toString(),
-                );
-                return matchingReport || element;
-              });
-              serviceReport.containerReports = updatedReports;
-            }
           }
-        }
-        let orderDetails;
-        if (serviceReport) {
-          await this.reportRepository.updateServiceReport(serviceId, serviceReport);
+
+          let orderDetails;
+          const updatedServiceResponse = await this.reportRepository.updateServiceReport(serviceId, serviceReport);
           if (
             report.orderId &&
             (serviceReport.reportStatus == ReportStatus.COMPLETED ||
@@ -214,41 +217,47 @@ export class ReportServices {
             orderDetails = await this.salesOrderRepository.findByOrderId(report.orderId);
             if (orderDetails) {
               if (serviceReport.reportStatus == ReportStatus.REVIEWED) {
-                new GenerateServiceContainerPDFService(
-                  serviceReport,
-                  orderDetails,
-                  this.reportRepository,
-                ).containerPDFgeneration();
+                new GenerateServiceContainerPDFService(serviceReport, orderDetails, this.reportRepository)
+                  .containerPDFgeneration()
+                  .then(() => {
+                    console.log('Pdf generated successfully');
+                  })
+                  .catch((error) => {
+                    console.log('Pdf generated Error: ', error);
+                  });
               }
             } else {
               next(new HttpException(404, 'Internal server error'));
+              return;
             }
           }
-        }
 
-        const serviceIds = report.serviceReports?.map((serviceReport) =>
-          serviceReport.serviceId != undefined ? serviceReport.serviceId?.toString() : '',
-        );
-        if (serviceIds) {
-          const servicesStatus = await this.reportRepository.findStatusByIds(serviceIds);
-          if (servicesStatus) {
-            const allApproved = servicesStatus.every((service) => service.reportStatus === ReportStatus.REVIEWED);
-            if (allApproved) {
-              if (orderDetails) {
-                await this.salesOrderRepository.update(orderDetails._id.toString(), { status: SoStatus.COMPLETED });
+          const serviceIds = report.serviceReports?.map((serviceReport) =>
+            serviceReport.serviceId != undefined ? serviceReport.serviceId?.toString() : '',
+          );
+          if (serviceIds) {
+            const servicesStatus = await this.reportRepository.findStatusByIds(serviceIds);
+            if (servicesStatus) {
+              const allApproved = servicesStatus.every((service) => service.reportStatus === ReportStatus.REVIEWED);
+              if (allApproved) {
+                if (orderDetails) {
+                  await this.salesOrderRepository.update(orderDetails._id.toString(), { status: SoStatus.COMPLETED });
+                }
+                report.isReviewed = true;
               }
-              report.isReviewed = true;
             }
           }
-        }
 
-        if (report) {
-          await this.reportRepository.update(reportId, report);
+          if (report) {
+            await this.reportRepository.update(reportId, report);
+          }
+          return updatedServiceResponse;
         }
       }
     } catch (error) {
       console.error('Error updating report:', error);
       next(new HttpException(404, 'Internal server error'));
+      return;
     }
   }
 

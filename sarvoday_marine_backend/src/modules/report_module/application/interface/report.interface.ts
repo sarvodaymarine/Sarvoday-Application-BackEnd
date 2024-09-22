@@ -42,6 +42,7 @@ export interface ContainerModel {
 export interface ServiceContainerModel {
   _id?: ObjectId;
   serviceName?: string;
+  isEdited?: boolean;
   reportStatus?: ReportStatus;
   containerReports?: ContainerModel[];
 }

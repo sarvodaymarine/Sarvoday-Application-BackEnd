@@ -28,6 +28,7 @@ export class ReportRepositoryImpl implements ReportRepository {
     containerId: mongoose.Types.ObjectId,
     path: string,
   ): Promise<void> {
+    console.log(`serviceId: ${serviceId}, containerId: ${containerId}, path: ${path}`);
     await ServiceReportModel.updateOne(
       {
         _id: serviceId,
@@ -39,7 +40,10 @@ export class ReportRepositoryImpl implements ReportRepository {
     );
   }
 
-  async updateServiceReport(id: string, updatedServiceReportDetail: Partial<ServiceContainerModel>): Promise<void> {
+  async updateServiceReport(
+    id: string,
+    updatedServiceReportDetail: Partial<ServiceContainerModel>,
+  ): Promise<ServiceContainerModel | null> {
     const updatedReport = await ServiceReportModel.findOneAndUpdate(
       { _id: id },
       { ...updatedServiceReportDetail, updatedAt: new Date() },
@@ -48,6 +52,7 @@ export class ReportRepositoryImpl implements ReportRepository {
     if (!updatedReport) {
       throw new Error(`Service report with id ${id} not found.`);
     }
+    return updatedReport;
   }
 
   async findById(reportId: mongoose.Types.ObjectId): Promise<Report | null> {
