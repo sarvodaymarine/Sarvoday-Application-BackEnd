@@ -14,7 +14,7 @@ function validateEnv(): void {
     AWS_ACCESS_KEY: str(),
     AWS_SECRET_ACCESS_KEY: str(),
     AWS_ENDPOINT_URL: str(),
-    PORT: port({ default: 3000 }),
+    PORT: port({ default: 4000 }),
   });
 }
 
