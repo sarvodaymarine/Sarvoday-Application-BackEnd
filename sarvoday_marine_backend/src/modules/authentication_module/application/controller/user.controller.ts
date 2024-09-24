@@ -28,7 +28,7 @@ export class UserController {
 
   async validateUserToken(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
-      res.send();
+      res.sendStatus(200);
     } catch (error) {
       next(new HttpException(400, (error as Error).message));
     }

@@ -44,7 +44,7 @@ const ContainerModelSchema = new Schema<IContainerModel>({
 
 const ServiceContainerModelSchema = new Schema<ServiceContainerModel>({
   serviceName: { type: String, required: true },
-  isEdited: { type: String, required: false },
+  isEdited: { type: Boolean, required: false, default: false },
   reportStatus: { type: String, required: false, default: 'Pending', enum: ReportStatus },
   containerReports: { type: [ContainerModelSchema], required: false },
 });

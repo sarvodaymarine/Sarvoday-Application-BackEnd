@@ -158,21 +158,8 @@ export class ReportServices {
           const serviceMetaForReport = report.serviceReports?.find(
             (sr: ServiceContainerMetaData) => sr.serviceId === serviceId,
           );
-          // Partial updates for report fields
-          if (isDefined(reportDetails.reportStatus) && isReviewed === 'true') {
-            if (reportDetails.reportStatus === ReportStatus.REVIEWED) {
-              if ((userRole === UserRoles.ADMIN && !reportDetails.isEdited) || userRole === UserRoles.SUPERADMIN) {
-                serviceReport.reportStatus = reportDetails.reportStatus;
-                if (serviceMetaForReport) {
-                  serviceMetaForReport.reportStatus = reportDetails.reportStatus;
-                }
-              } else {
-                next(new HttpException(403, 'Access denied. You cannot have access to reviewed the report'));
-                return;
-              }
-            }
-          }
 
+          // Partial updates for report fields
           if (isDefined(reportDetails.containerReports) && reportDetails.containerReports) {
             let isServiceReportIsPending: boolean = false;
 
@@ -186,13 +173,12 @@ export class ReportServices {
               serviceReport.containerReports = updatedReports;
             }
 
-            reportDetails.containerReports.forEach((element) => {
-              if (!validateContainerReportDetails(element)) {
-                isServiceReportIsPending = true;
-              }
-            });
-
             if (isReviewed === 'false') {
+              reportDetails.containerReports.forEach((element) => {
+                if (!validateContainerReportDetails(element)) {
+                  isServiceReportIsPending = true;
+                }
+              });
               if (!isServiceReportIsPending) {
                 serviceReport.reportStatus = ReportStatus.COMPLETED;
                 if (serviceMetaForReport) {
@@ -207,44 +193,54 @@ export class ReportServices {
             }
           }
 
-          let orderDetails;
+          if (isDefined(reportDetails.reportStatus) && isReviewed === 'true') {
+            if (reportDetails.reportStatus === ReportStatus.REVIEWED) {
+              if ((userRole === UserRoles.ADMIN && !reportDetails.isEdited) || userRole === UserRoles.SUPERADMIN) {
+                serviceReport.reportStatus = reportDetails.reportStatus;
+                if (serviceMetaForReport) {
+                  serviceMetaForReport.reportStatus = reportDetails.reportStatus;
+                }
+                serviceReport.isEdited = true;
+              } else {
+                next(new HttpException(403, 'Access denied. You cannot have access to reviewed the report'));
+                return;
+              }
+            }
+          }
+
           const updatedServiceResponse = await this.reportRepository.updateServiceReport(serviceId, serviceReport);
-          if (
-            report.orderId &&
-            (serviceReport.reportStatus == ReportStatus.COMPLETED ||
-              serviceReport.reportStatus == ReportStatus.REVIEWED)
-          ) {
-            orderDetails = await this.salesOrderRepository.findByOrderId(report.orderId);
+          if (report.orderId && serviceReport.reportStatus == ReportStatus.REVIEWED) {
+            const orderDetails = await this.salesOrderRepository.findByOrderId(report.orderId);
             if (orderDetails) {
-              if (serviceReport.reportStatus == ReportStatus.REVIEWED) {
-                new GenerateServiceContainerPDFService(serviceReport, orderDetails, this.reportRepository)
-                  .containerPDFgeneration()
-                  .then(() => {
-                    console.log('Pdf generated successfully');
-                  })
-                  .catch((error) => {
-                    console.log('Pdf generated Error: ', error);
-                  });
+              new GenerateServiceContainerPDFService(serviceReport, orderDetails, this.reportRepository)
+                .containerPDFgeneration()
+                .then(() => {
+                  console.log('Pdf generated successfully');
+                })
+                .catch((error) => {
+                  console.log('Pdf generated Error: ', error);
+                });
+
+              const serviceIds = report.serviceReports?.map((serviceReport) =>
+                serviceReport.serviceId != undefined ? serviceReport.serviceId?.toString() : '',
+              );
+              if (serviceIds) {
+                const servicesStatus = await this.reportRepository.findStatusByIds(serviceIds);
+                if (servicesStatus) {
+                  const allApproved = servicesStatus.every((service) => service.reportStatus === ReportStatus.REVIEWED);
+                  if (allApproved) {
+                    if (orderDetails) {
+                      await this.salesOrderRepository.update(orderDetails._id.toString(), {
+                        status: SoStatus.COMPLETED,
+                      });
+                    }
+                    report.isReviewed = true;
+                  }
+                }
               }
             } else {
               next(new HttpException(404, 'Internal server error'));
               return;
-            }
-          }
-
-          const serviceIds = report.serviceReports?.map((serviceReport) =>
-            serviceReport.serviceId != undefined ? serviceReport.serviceId?.toString() : '',
-          );
-          if (serviceIds) {
-            const servicesStatus = await this.reportRepository.findStatusByIds(serviceIds);
-            if (servicesStatus) {
-              const allApproved = servicesStatus.every((service) => service.reportStatus === ReportStatus.REVIEWED);
-              if (allApproved) {
-                if (orderDetails) {
-                  await this.salesOrderRepository.update(orderDetails._id.toString(), { status: SoStatus.COMPLETED });
-                }
-                report.isReviewed = true;
-              }
             }
           }
 
@@ -268,30 +264,31 @@ export class ReportServices {
   async getServiceReportById(orderId: string): Promise<ServiceContainerModel | null> {
     const id = new mongoose.Types.ObjectId(orderId);
     const serviceResponse = await this.reportRepository.findServiceReportById(id);
-    if (serviceResponse) {
-      if (serviceResponse.containerReports) {
-        await Promise.all(
-          serviceResponse.containerReports.map(async (containerReport) => {
-            if (containerReport.containerReportPath) {
-              containerReport.containerReportUrl = await new ImageUploadService().getSignedAWSFileOrIMageUrl(
-                containerReport.containerReportPath,
-              );
-            }
+    if (serviceResponse && serviceResponse.containerReports) {
+      const promise: any = [];
+      const s3ImageUploadService = new ImageUploadService();
+      serviceResponse.containerReports.forEach(async (containerReport) => {
+        if (containerReport.containerReportPath) {
+          promise.push(
+            s3ImageUploadService
+              .getSignedAWSFileOrIMageUrl(containerReport.containerReportPath)
+              .then((signedUrl) => (containerReport.containerReportUrl = signedUrl)),
+          );
+        }
 
-            if (containerReport.containerImages) {
-              await Promise.all(
-                containerReport.containerImages.map(async (imageDetail) => {
-                  if (imageDetail.imagePath) {
-                    imageDetail.imageUrlLink = await new ImageUploadService().getSignedAWSFileOrIMageUrl(
-                      imageDetail.imagePath,
-                    );
-                  }
-                }),
+        if (containerReport.containerImages) {
+          containerReport.containerImages.forEach(async (imageDetail) => {
+            if (imageDetail.imagePath) {
+              promise.push(
+                s3ImageUploadService
+                  .getSignedAWSFileOrIMageUrl(imageDetail.imagePath)
+                  .then((signedUrl) => (imageDetail.imageUrlLink = signedUrl)),
               );
             }
-          }),
-        );
-      }
+          });
+        }
+      });
+      await Promise.all(promise);
     }
     return serviceResponse;
   }
