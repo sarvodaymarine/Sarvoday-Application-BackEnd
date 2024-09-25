@@ -4,7 +4,11 @@ import { ClientServices } from '@src/modules/client_module/domain/services/clien
 import { ClientController } from '@src/modules/client_module/application/controller/client.controller';
 import { UserRepositoryImpl } from '@src/modules/authentication_module/infrastructure/persistence/user.repository';
 import { UserService } from '@src/modules/authentication_module/domain/services/user.services';
-import { authMiddleware, authorizeAdminOrSuperAdminRole } from '@src/infrastructure/security/auth.middleware';
+import {
+  authMiddleware,
+  authorizeAdminOrSuperAdminRole,
+  authorizeSuperAdminRole,
+} from '@src/infrastructure/security/auth.middleware';
 
 const clientRepositoryImpl = new ClientRepositoryImpl();
 const clientModuleAPI = new ClientServices(clientRepositoryImpl);
@@ -32,24 +36,10 @@ router.put(
 router.delete(
   '/deleteClient/:id',
   authMiddleware,
-  authorizeAdminOrSuperAdminRole,
+  authorizeSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     clientController.deleteClient(req, res, next),
 );
-
-// router.get(
-//   '/getClient/:id',
-//   // validateClientApiParams,
-//   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
-//     clientController.getClientById(req, res, next),
-// );
-
-// router.get(
-//   '/getClientByMobile:countryCode/:mobile',
-//   validateClientApiParams,
-//   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
-//     clientController.getClientByMobile(req, res, next),
-// );
 
 router.get(
   '/getAllClients',

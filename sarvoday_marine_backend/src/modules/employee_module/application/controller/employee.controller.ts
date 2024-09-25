@@ -13,9 +13,6 @@ export class EmployeeController {
 
   async addEmployeeAPI(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const { firstName, lastName, email, countryCode, mobile, userRole } = req.body;
-    // const session = await mongoose.startSession();
-    // session.startTransaction();
-
     try {
       const createdUser: User = await this.userService.provideAuthService(
         firstName,
@@ -24,22 +21,16 @@ export class EmployeeController {
         countryCode,
         mobile,
         userRole,
-        // { session: session },
       );
 
       const employeeResponse = await this.employeeServices.createEmployeeService(
-        createdUser._id /*assignLocations, {session: session}*/,
+        createdUser._id,
         firstName,
         lastName,
         userRole,
       );
-
-      // await session.commitTransaction();
-      // session.endSession();
       res.json(employeeResponse);
     } catch (error) {
-      // await session.abortTransaction();
-      // session.endSession();
       console.log('Error', error);
       next(new HttpException(400, (error as Error).message));
     }
@@ -63,8 +54,8 @@ export class EmployeeController {
     const updateDetails = req.body;
     try {
       const employee = await this.employeeServices.updateEmployee(id, updateDetails);
-      if (employee != null) {
-        await this.userService.updateUserDetail(employee!.userId, updateDetails);
+      if (employee) {
+        await this.userService.updateUserDetail(employee.userId, updateDetails);
       }
       res.json(employee);
     } catch (error) {

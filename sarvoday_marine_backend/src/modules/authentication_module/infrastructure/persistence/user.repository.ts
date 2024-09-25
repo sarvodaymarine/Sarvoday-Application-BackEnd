@@ -45,6 +45,14 @@ export class UserRepositoryImpl implements UserRepository {
     await user.setPassword(newPassword);
   }
 
+  async resetPassword(id: string): Promise<void> {
+    const user = await UserModel.findById(id);
+    if (!user) {
+      throw new Error('User Not Found');
+    }
+    await user.resetPassword();
+  }
+
   async findById(id: string): Promise<User | null> {
     const user = await UserModel.findById(id).where('isDeleted').equals(false).exec();
     return user ? user.toJSON() : null;

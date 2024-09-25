@@ -2,11 +2,13 @@ import { PasswordHasher } from '@src/infrastructure/security/password.hasher';
 import { UserRoles } from '@src/shared/enum/user_roles.enum';
 import mongoose, { Schema, Document, Types } from 'mongoose';
 import { CreateUser } from '../../application/interface/user.interface';
+import { sendResetPasswordEmail } from '@src/infrastructure/security/email_triggeration_function';
 
 interface UserDocument extends CreateUser, Document {
   _id: Types.ObjectId;
   isValidPassword(password: string): Promise<Error | boolean>;
   setPassword(newPassword: string): Promise<void>;
+  resetPassword(): Promise<void>;
 }
 
 const UserSchema: Schema = new Schema(
@@ -21,6 +23,7 @@ const UserSchema: Schema = new Schema(
 
     dummyPassword: { type: String },
     dummyText: { type: String },
+    isPasswordReset: { type: Boolean, default: false },
     isFirstLogin: { type: Boolean, default: true },
     isActive: { type: Boolean, required: true },
     isDeleted: { type: Boolean, required: true },
@@ -61,7 +64,17 @@ UserSchema.methods.setPassword = async function (newPassword: string): Promise<v
   this.dummyPassword = '';
   this.dummyText = '';
   this.isFirstLogin = false;
+  this.isPasswordReset = false;
   await this.save();
+};
+
+UserSchema.methods.resetPassword = async function (): Promise<void> {
+  const dummyPassword = Math.random().toString(36).slice(-8);
+  this.dummyPassword = await new PasswordHasher().hashPassword(dummyPassword);
+  this.password = '';
+  this.isPasswordReset = true;
+  await this.save();
+  await sendResetPasswordEmail(this.email, `${this.firstName} ${this.lastName}`, dummyPassword);
 };
 
 UserSchema.methods.isValidPassword = async function (password: string): Promise<Error | boolean> {

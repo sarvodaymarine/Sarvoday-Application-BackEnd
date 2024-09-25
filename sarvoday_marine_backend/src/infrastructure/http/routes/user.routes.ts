@@ -6,7 +6,7 @@ import {
   validateUser,
   validateLoginCredentical,
 } from '@src/modules/authentication_module/application/middleware/user.middleware';
-import { authMiddleware, authorizeAdminOrSuperAdminRole } from '@src/infrastructure/security/auth.middleware';
+import { authMiddleware, authorizeSuperAdminRole } from '@src/infrastructure/security/auth.middleware';
 
 const userRepository = new UserRepositoryImpl();
 const createUser = new UserService(userRepository);
@@ -16,7 +16,7 @@ const router = Router();
 router.post(
   '/provideAuthAccess',
   authMiddleware,
-  authorizeAdminOrSuperAdminRole,
+  authorizeSuperAdminRole,
   validateUser,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     userController.provideAuthAcess(req, res, next),
@@ -31,8 +31,17 @@ router.post(
 
 router.post(
   '/:id/changePassword',
+  authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     userController.changePassword(req, res, next),
+);
+
+router.post(
+  '/resetPassword/:id',
+  authMiddleware,
+  authorizeSuperAdminRole,
+  (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
+    userController.resetUserPassword(req, res, next),
 );
 
 router.post(
@@ -45,7 +54,7 @@ router.post(
 router.put(
   '/enableDisable/:id',
   authMiddleware,
-  authorizeAdminOrSuperAdminRole,
+  authorizeSuperAdminRole,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     userController.activeDeActiveUserAuth(req, res, next),
 );

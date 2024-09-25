@@ -34,15 +34,19 @@ export class UserController {
     }
   }
 
-  // async deleteUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
-  //   const id = req.params.id;
-  //   try {
-  //     const user = await this.userService.deleteUser(id);
-  //     res.json(user);
-  //   } catch (error) {
-  //     next(new HttpException(400, (error as Error).message));
-  //   }
-  // }
+  async resetUserPassword(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
+    const id = req.params.id;
+    try {
+      if (id) {
+        const user = await this.userService.resetPasswordService(id);
+        res.json(user);
+      } else {
+        next(new HttpException(400, 'Bad Request!'));
+      }
+    } catch (error) {
+      next(new HttpException(400, (error as Error).message));
+    }
+  }
 
   async changePassword(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     const id = req.params.id;
@@ -54,17 +58,6 @@ export class UserController {
       next(new HttpException(400, (error as Error).message));
     }
   }
-
-  // async updateUser(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
-  //   const id = req.params.id;
-  //   const updateDetails = req.body;
-  //   try {
-  //     const employee = await this.userService.updateUserDetail(id, updateDetails);
-  //     res.json(employee);
-  //   } catch (error) {
-  //     next(new HttpException(400, (error as Error).message));
-  //   }
-  // }
 
   async getAllUsers(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {

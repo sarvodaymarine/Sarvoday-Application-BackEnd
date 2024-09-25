@@ -3,7 +3,7 @@ import { UserRoles } from '@src/shared/enum/user_roles.enum';
 import { LoginCredential, User } from '../../application/interface/user.interface';
 import { BaseUser } from '@src/shared/interface/base_user.interface';
 import mongoose from 'mongoose';
-import { sendEmail } from '@src/infrastructure/security/email_triggeration_function';
+import { sendLoginCredentialEmail } from '@src/infrastructure/security/email_triggeration_function';
 export class UserService {
   constructor(private userRepositoryImpl: UserRepositoryImpl) {}
 
@@ -30,7 +30,11 @@ export class UserService {
     if (!existUser) {
       const resultUser = await this.userRepositoryImpl.create(user);
       if (isActive) {
-        sendEmail(resultUser.email, `${resultUser.firstName} ${resultUser.lastName}`, resultUser.dummyText);
+        sendLoginCredentialEmail(
+          resultUser.email,
+          `${resultUser.firstName} ${resultUser.lastName}`,
+          resultUser.dummyText,
+        );
       }
       return resultUser;
     } else {
@@ -48,7 +52,21 @@ export class UserService {
   }
 
   async changePasswordService(id: string, newPassword: string): Promise<void | null> {
-    return this.userRepositoryImpl.changePassword(id, newPassword);
+    const user = await this.userRepositoryImpl.findById(id);
+    if (user && ((user.isFirstLogin ?? false) || (user.isPasswordReset ?? false))) {
+      return this.userRepositoryImpl.changePassword(id, newPassword);
+    } else {
+      throw new Error('Bad Request!');
+    }
+  }
+
+  async resetPasswordService(id: string): Promise<void | null> {
+    const user = await this.userRepositoryImpl.findById(id);
+    if (user) {
+      return this.userRepositoryImpl.resetPassword(id);
+    } else {
+      throw new Error('Bad Request!');
+    }
   }
 
   async getUserByEmail(email: string): Promise<User | null> {
@@ -71,7 +89,7 @@ export class UserService {
     const userId = new mongoose.Types.ObjectId(id);
     const existUser = await this.userRepositoryImpl.update(userId, updateDetails);
     if (existUser && existUser.isActive && existUser.isFirstLogin) {
-      sendEmail(existUser.email, `${existUser.firstName} ${existUser.lastName}`, existUser.dummyText);
+      sendLoginCredentialEmail(existUser.email, `${existUser.firstName} ${existUser.lastName}`, existUser.dummyText);
     }
     return existUser;
   }

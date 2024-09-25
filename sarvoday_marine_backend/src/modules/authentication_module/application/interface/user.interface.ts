@@ -6,6 +6,7 @@ interface CreateUser extends BaseUser {
   dummyPassword: string;
   dummyText: string;
   isFirstLogin: boolean;
+  isPasswordReset: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
