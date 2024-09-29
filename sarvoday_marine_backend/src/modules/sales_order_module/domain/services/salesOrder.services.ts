@@ -129,7 +129,6 @@ export class SalesOrderServices {
 
   async updateSalesOrder(id: string, updateDetails: Partial<SalesOrder>, userRole: string): Promise<SalesOrder | null> {
     const orderDetail = await this.salesOrderRepository.findById(id);
-    console.log('updateDetails', updateDetails);
     if (!orderDetail) {
       throw new Error(`Sales Order doesn't found`);
     }
@@ -277,10 +276,6 @@ export class SalesOrderServices {
     const promise: Promise<ServiceContainerMetaData>[] = [];
     for (const service of data.services ?? []) {
       const serviceFromClient = clientServicesList.find((cs) => {
-        console.log('cs.serviceId ', cs.serviceId.toString());
-        console.log('service.serviceId ', service.serviceId.toString());
-        console.log('cs.serviceId ', service.serviceId.toString());
-        console.log('cs._id ', cs._id.toString());
         return isFromUpdate
           ? cs.serviceId === service.serviceId.toString() || cs._id.toString() === service.serviceId.toString()
           : cs._id.toString() === service.serviceId.toString();
@@ -299,15 +294,12 @@ export class SalesOrderServices {
         console.error(`Client service not found for service: ${serviceFromClient.serviceName}`);
         throw new Error(`Client service not found for service: ${serviceFromClient.serviceName}`);
       }
-      console.log('clientService', clientService);
       const containerImages = clientService.serviceImage
         .filter((element) => {
-          console.log('Filtering element with imagecount:', element.imageCount);
           const imageCount = Number(element.imageCount);
           return imageCount > 0;
         })
         .flatMap((element) => {
-          console.log('element', element);
           const imageCount = Number(element.imageCount);
           return Array.from({ length: imageCount }, (_, i) => ({
             imageName: element.imageName,
@@ -315,8 +307,6 @@ export class SalesOrderServices {
             imageUrlLink: '',
           }));
         });
-
-      console.log('Container Images:', containerImages);
 
       const container: ContainerModel = { containerImages };
       const containerList = Array.from({ length: data.noOfContainer ?? 0 }, () => container);
@@ -362,8 +352,6 @@ export class SalesOrderServices {
     lastDateOfWeek: string,
   ): Promise<SalesOrder[] | null> {
     let filter = {};
-    console.log('userRole', userRole);
-    console.log('userId', userId);
     const startDate = new Date(startDateOfWeek).setHours(0, 0, 0, 0);
     const endDate = new Date(lastDateOfWeek).setHours(23, 59, 59, 59);
 
@@ -402,7 +390,6 @@ export class SalesOrderServices {
         throw new Error('Invalid user type');
     }
     const salesOrders = await this.salesOrderRepository.getAllSalesOrders(filter);
-    console.log('salesOrders', salesOrders);
     if (!salesOrders) {
       return [];
     }

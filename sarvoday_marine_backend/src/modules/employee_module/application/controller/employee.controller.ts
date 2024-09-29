@@ -31,7 +31,6 @@ export class EmployeeController {
       );
       res.json(employeeResponse);
     } catch (error) {
-      console.log('Error', error);
       next(new HttpException(400, (error as Error).message));
     }
   }

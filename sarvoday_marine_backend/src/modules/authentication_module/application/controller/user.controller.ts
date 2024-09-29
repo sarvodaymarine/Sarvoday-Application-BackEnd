@@ -11,7 +11,6 @@ export class UserController {
       const user = await this.userService.provideAuthService(firstName, lastName, email, countryCode, mobile, userRole);
       res.json(user);
     } catch (error) {
-      console.log('Error', error);
       next(new HttpException(400, (error as Error).message));
     }
   }

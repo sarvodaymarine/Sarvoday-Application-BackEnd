@@ -38,7 +38,6 @@ export class ClientController {
       );
       res.json(client);
     } catch (error) {
-      console.log('error', error);
       next(new HttpException(400, (error as Error).message));
     }
   }

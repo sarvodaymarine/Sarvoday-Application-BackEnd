@@ -66,10 +66,15 @@ export class ReportRepositoryImpl implements ReportRepository {
   }
 
   async findServiceReportById(serviceId: mongoose.Types.ObjectId): Promise<ServiceContainerModel | null> {
-    console.log('serviceId', serviceId);
     const serviceReport = await ServiceReportModel.findOne({ _id: serviceId }).exec();
-    console.log('ServiceReport', serviceReport);
     return serviceReport ? serviceReport.toJSON() : null;
+  }
+
+  async getServicesReportById(serviceIds: mongoose.Types.ObjectId[]): Promise<ServiceContainerModel[] | null> {
+    const serviceDocuments = await ServiceReportModel.find({
+      _id: { $in: serviceIds },
+    }).exec();
+    return serviceDocuments;
   }
 
   async findStatusByIds(

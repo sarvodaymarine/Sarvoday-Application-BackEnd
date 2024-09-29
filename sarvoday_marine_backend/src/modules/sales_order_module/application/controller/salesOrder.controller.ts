@@ -10,7 +10,6 @@ export class SalesOrderController {
     try {
       const userRole = req.userRole!;
       const userId = req.userId!;
-      console.log('data', req.body);
       const salesOrder = await this.salesOrderServices.createSalesOrder(userId, req.body, userRole);
       res.status(200).json(salesOrder);
     } catch (error) {

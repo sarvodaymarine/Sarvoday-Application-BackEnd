@@ -8,6 +8,7 @@ export interface ReportRepository {
   findById(reportId: mongoose.Types.ObjectId): Promise<Report | null>;
   findReportBySalesOrder(orderId: string): Promise<Report | null>;
   findServiceReportById(serviceId: mongoose.Types.ObjectId): Promise<ServiceContainerModel | null>;
+  getServicesReportById(serviceIds: mongoose.Types.ObjectId[]): Promise<ServiceContainerModel[] | null>;
   updateServiceReport(
     id: string,
     updatedServiceReportDetail: Partial<ServiceContainerModel>,

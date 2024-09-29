@@ -52,6 +52,7 @@ const ServiceContainerModelSchema = new Schema<ServiceContainerModel>({
 const serviceReportMetaDataConfigSchema = new Schema<ServiceContainerMetaData>({
   serviceName: { type: String, required: true },
   serviceId: { type: String, required: true },
+  isReportGenerated: { type: Boolean, default: false },
   reportStatus: { type: String, required: false, default: 'Pending', enum: ReportStatus },
 });
 

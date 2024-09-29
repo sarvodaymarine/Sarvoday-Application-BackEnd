@@ -77,7 +77,7 @@ export class ReportGenerator {
 
   public async generatePDF(): Promise<void> {
     const browser = await puppeteer.launch({
-      executablePath: '/usr/bin/chromium-browser',
+      // executablePath: '/usr/bin/chromium-browser',
       headless: true,
       pipe: true,
       args: ['--headless', '--disable-gpu', '--no-sandbox'],

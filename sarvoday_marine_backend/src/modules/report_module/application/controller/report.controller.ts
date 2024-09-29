@@ -11,7 +11,6 @@ export class ReportController {
       const report = await this.reportServices.createReport(req.body);
       res.status(200).json(report);
     } catch (error) {
-      console.log('error', error);
       next(new HttpException(400, (error as Error).message));
     }
   }
@@ -25,7 +24,6 @@ export class ReportController {
       if (userRole === undefined) {
         next(new HttpException(401, 'Unauthorised'));
       } else {
-        console.log('updateDetails', updateDetails);
         const response = await this.reportServices.updateServiceReport(
           reportId,
           serviceId,
@@ -38,6 +36,29 @@ export class ReportController {
           res.json(response);
         }
       }
+    } catch (error) {
+      next(new HttpException(400, (error as Error).message));
+    }
+  }
+
+  async generateReport(req: CustomRequest, res: Response, next: NextFunction): Promise<Response | void> {
+    const { serviceId, reportId } = req.params;
+
+    try {
+      const response = await this.reportServices.generateReport(reportId, serviceId);
+      if (response) {
+        res.json(response);
+      }
+    } catch (error) {
+      next(new HttpException(400, (error as Error).message));
+    }
+  }
+
+  async sendReport(req: CustomRequest, res: Response, next: NextFunction): Promise<Response | void> {
+    const { reportId } = req.params;
+
+    try {
+      await this.reportServices.sendReport(reportId);
     } catch (error) {
       console.log('error', error);
       next(new HttpException(400, (error as Error).message));

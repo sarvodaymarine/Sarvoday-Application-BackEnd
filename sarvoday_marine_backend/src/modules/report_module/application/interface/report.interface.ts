@@ -51,6 +51,7 @@ export interface ServiceContainerMetaData {
   serviceId?: string;
   serviceName?: string;
   reportStatus?: ReportStatus;
+  isReportGenerated?: boolean;
 }
 
 export interface Report {

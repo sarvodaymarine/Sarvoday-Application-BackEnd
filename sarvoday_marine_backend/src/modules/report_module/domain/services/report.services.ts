@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ReportRepository } from '../../application/interface/report_repository.interface';
+import path from 'path';
+import axios from 'axios';
+import os from 'os';
+import fs from 'fs';
 import {
   PathAndSignedUrl,
   Report,
@@ -16,6 +20,8 @@ import { ImageUploadService } from '@src/s3_services/s3_image_upload_service';
 import { format } from 'date-fns';
 import { GenerateServiceContainerPDFService } from './generate_pdf_service';
 import { SoStatus } from '@src/shared/enum/so_status.enum';
+import { sendReportMail } from '@src/infrastructure/security/email_triggeration_function';
+import { UserRepositoryImpl } from '@src/modules/authentication_module/infrastructure/persistence/user.repository';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isDefined = (value: any): boolean => value !== undefined && value !== null && value !== '';
@@ -259,6 +265,135 @@ export class ReportServices {
 
   async getReportById(orderId: string): Promise<Report | null> {
     return this.reportRepository.findReportBySalesOrder(orderId);
+  }
+
+  async generateReport(reportId: string, serviceId: string): Promise<Report | null> {
+    const report = await this.reportRepository.findById(new Types.ObjectId(reportId));
+    if (!report || !report.orderId) {
+      throw new Error('Report not found or missing order ID!');
+    }
+    const [orderDetails, serviceReport] = await Promise.all([
+      this.salesOrderRepository.findByOrderId(report.orderId),
+      this.reportRepository.findServiceReportById(new mongoose.Types.ObjectId(serviceId)),
+    ]);
+
+    if (!orderDetails || !serviceReport) {
+      throw new Error('Order or Service Report not found!');
+    }
+
+    if (serviceReport.reportStatus !== ReportStatus.REVIEWED) {
+      throw new Error('Service Report is not in the Reviewed status!');
+    }
+    await new GenerateServiceContainerPDFService(
+      serviceReport,
+      orderDetails,
+      this.reportRepository,
+    ).containerPDFgeneration();
+    const serviceMetaReport = report.serviceReports?.find((element) => element.serviceId === serviceId);
+    if (serviceMetaReport) {
+      serviceMetaReport.isReportGenerated = true;
+    }
+
+    return this.reportRepository.update(reportId, report);
+  }
+
+  async sendReport(reportId: string): Promise<void> {
+    const report = await this.reportRepository.findById(new Types.ObjectId(reportId));
+    if (!report) {
+      throw new Error('Report not found!');
+    }
+    if (!report.serviceReports) {
+      throw new Error('No service reports found in the report!');
+    }
+
+    const serviceIds = report.serviceReports.map(
+      (serviceReport) => new mongoose.Types.ObjectId(serviceReport.serviceId),
+    );
+    const serviceReports = await this.reportRepository.getServicesReportById(serviceIds);
+    if (!serviceReports || serviceIds.length !== serviceReports.length) {
+      throw new Error('Some service reports are missing!');
+    }
+
+    const listOfPDFPath: string[] = [];
+    const isAllContainerReportsValid = (reports: any[]): boolean => {
+      for (const report of reports) {
+        if (report?.containerReports) {
+          for (const containerReport of report.containerReports) {
+            if (containerReport.containerReportPath) {
+              listOfPDFPath.push(containerReport.containerReportPath);
+            } else {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    };
+
+    if (!isAllContainerReportsValid(serviceReports)) {
+      throw new Error('All service container reports must be generated before sending the report!');
+    }
+
+    const orderDetails = await this.salesOrderRepository.findByOrderId(report.orderId!);
+    if (!orderDetails) {
+      throw new Error('Order details not found!');
+    }
+
+    const clientInfo = await new UserRepositoryImpl().findById(orderDetails.clientId.toString());
+    if (!clientInfo) {
+      throw new Error('Customer not found while generating PDF!');
+    }
+    const s3ImageUploadService = new ImageUploadService();
+    const urlPromises = listOfPDFPath.map((containerReportPath) =>
+      containerReportPath
+        ? s3ImageUploadService.getSignedAWSFileOrIMageUrl(containerReportPath).then((url) => {
+            return { url: url, fileName: path.basename(containerReportPath) };
+          })
+        : Promise.reject(new Error('Invalid path')),
+    );
+
+    const listOfUrls: { url: string; fileName: string }[] = await Promise.all(urlPromises);
+    const downloadedFiles = await Promise.all(listOfUrls.map(this.downloadFile));
+    // Prepare service names for the email
+    const serviceNames = report.serviceReports
+      .map((serviceReport) => serviceReport.serviceName)
+      .filter((name) => name)
+      .join(', ');
+
+    // Send the report via email
+    await sendReportMail(
+      clientInfo.email,
+      orderDetails.clientName,
+      serviceNames,
+      report.orderId ?? '',
+      (orderDetails.noOfContainer ?? 0).toString(),
+      downloadedFiles,
+    );
+    await this.salesOrderRepository.update(orderDetails._id.toString(), {
+      status: SoStatus.COMPLETED,
+    });
+  }
+
+  private async downloadFile(file: { url: string; fileName: string }) {
+    const tempDir = os.tmpdir();
+    const filePath = path.join(tempDir, path.basename(file.fileName));
+
+    const response = await axios.get(file.url, {
+      responseType: 'stream',
+    });
+    return new Promise((resolve, reject) => {
+      const writer = fs.createWriteStream(filePath);
+      response.data.pipe(writer);
+
+      writer.on('finish', () => {
+        console.log('filePath', filePath);
+        resolve(filePath);
+      });
+
+      writer.on('error', (err) => {
+        fs.unlink(filePath, () => reject(err));
+      });
+    });
   }
 
   async getServiceReportById(orderId: string): Promise<ServiceContainerModel | null> {

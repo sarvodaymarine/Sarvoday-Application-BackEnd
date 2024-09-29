@@ -1,4 +1,4 @@
-import { authMiddleware } from '@src/infrastructure/security/auth.middleware';
+import { authMiddleware, authorizeSuperAdminRole } from '@src/infrastructure/security/auth.middleware';
 import { ReportController } from '@src/modules/report_module/application/controller/report.controller';
 import { ReportServices } from '@src/modules/report_module/domain/services/report.services';
 import { ReportRepositoryImpl } from '@src/modules/report_module/infrastructure/persistence/report.repository';
@@ -24,6 +24,22 @@ router.put(
   authMiddleware,
   (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
     reprotController.updateServiceReport(req, res, next),
+);
+
+router.post(
+  '/:reportId/serviceReport/:serviceId/generateReport',
+  authMiddleware,
+  authorizeSuperAdminRole,
+  (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
+    reprotController.generateReport(req, res, next),
+);
+
+router.post(
+  '/:reportId/sendReport',
+  authMiddleware,
+  authorizeSuperAdminRole,
+  (req: Request, res: Response, next: NextFunction): Promise<Response | void> =>
+    reprotController.sendReport(req, res, next),
 );
 
 router.get(
