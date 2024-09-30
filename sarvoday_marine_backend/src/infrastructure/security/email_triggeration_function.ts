@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import path from 'path';
 import { google } from 'googleapis';
+import fs from 'fs';
 dotenv.config();
 
 const CLIENT_ID = process.env.EMAIL_CLIENT_ID;
@@ -230,7 +231,7 @@ export const sendReportMail = async (
     subject: 'Container Reports for Your Review from Sarvoday Marine',
     attachment: attachment.map((filePath: any) => ({
       filename: path.basename(filePath),
-      path: filePath,
+      content: fs.readFileSync(filePath),
       contentType: 'application/pdf',
     })),
     html: `<!DOCTYPE html>
