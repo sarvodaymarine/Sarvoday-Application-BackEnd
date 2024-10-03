@@ -16,7 +16,6 @@ import {
 } from '@src/modules/report_module/application/interface/report.interface';
 import { Service } from '@src/modules/services_module/application/interface/services.interface';
 import { ServiceRepository } from '@src/modules/services_module/application/interface/services_repository.interface';
-import { ClientRepositoryImpl } from '@src/modules/client_module/infrastructure/persistence/client.repository';
 
 export class SalesOrderServices {
   constructor(
@@ -123,7 +122,7 @@ export class SalesOrderServices {
     data.totalTax = totalTax;
     data.totalInvoice = totalTax + totalExpensePrice + totalServicePrice;
     this.config.update(businessConfig[0]._id.toString(), { soId: businessConfig[0].soId + 1 });
-    await this.setupReportDetails(data, servicesList ?? [], client.services, false);
+    await this.setupReportDetails(data, null, servicesList ?? [], client.services, false, data.orderId);
     return this.salesOrderRepository.create(data);
   }
 
@@ -138,67 +137,27 @@ export class SalesOrderServices {
       throw new Error(`Client with ID ${orderDetail.clientId} not found`);
     }
     const servicesList = await this.serviceRepository.getAllServices();
-    await this.setupReportDetails(updateDetails, servicesList ?? [], client.services, true);
-
+    if (
+      (updateDetails.clientId !== undefined &&
+        updateDetails.clientId !== null &&
+        orderDetail.clientId !== updateDetails.clientId) ||
+      (updateDetails.services !== undefined &&
+        updateDetails.services !== null &&
+        orderDetail.services !== updateDetails.services) ||
+      (updateDetails.noOfContainer !== undefined &&
+        updateDetails.noOfContainer !== null &&
+        orderDetail.noOfContainer !== updateDetails.noOfContainer)
+    ) {
+      await this.setupReportDetails(
+        updateDetails,
+        orderDetail,
+        servicesList ?? [],
+        client.services,
+        true,
+        orderDetail.orderId,
+      );
+    }
     if (userRole === UserRoles.ADMIN) {
-      // const oldServiceIds = orderDetail.services.map((s) => s.serviceId.toString());
-      // const newServices =
-      //   updateDetails.services?.filter((service) => !oldServiceIds.includes(service.serviceId.toString())) || [];
-      // const updatedNewServicesWithPrices = await this.ServicePriceCalculation(
-      //   updateDetails.noOfContainer ?? orderDetail.noOfContainer,
-      //   newServices,
-      //   client.services,
-      //   userRole,
-      //   updateDetails.clientName ?? orderDetail.clientName,
-      // );
-      // if (updateDetails.noOfContainer != undefined && updateDetails.noOfContainer === 0) {
-      //   throw new Error(`Count of container must be greter than 0`);
-      // }
-      // let updatedOldServiceWithPrice = orderDetail.services;
-      // if (updateDetails.noOfContainer !== orderDetail.noOfContainer) {
-      //   updatedOldServiceWithPrice = await Promise.all(
-      //     orderDetail.services.map(async (service) => {
-      //       return {
-      //         serviceId: service.serviceId,
-      //         serviceName: service.serviceName,
-      //         priceType: service.priceType,
-      //         price: service.price,
-      //         totalPrice: (service.price ?? 0) * (updateDetails.noOfContainer ?? 1),
-      //       };
-      //     }),
-      //   );
-      // }
-
-      // const totalNewServicePrice = updatedNewServicesWithPrices.reduce(
-      //   (sum, service) => sum + (service.totalPrice ?? 0),
-      //   0,
-      // );
-      // const totalOldServicePrice = updatedOldServiceWithPrice.reduce(
-      //   (sum, service) => sum + (service.totalPrice ?? 0),
-      //   0,
-      // );
-
-      // const totalExpensePrice = (updateDetails.otherExpenses ?? orderDetail.otherExpenses).reduce(
-      //   (sum, expenseInfo) => sum + expenseInfo.price,
-      //   0,
-      // );
-
-      // let totalTax = 0;
-      // const calculatedTaxes =
-      //   (updateDetails.tax ?? orderDetail.tax).map((tax) => {
-      //     const taxAmount =
-      //       ((totalNewServicePrice + totalOldServicePrice + totalExpensePrice) * (tax.cGST + tax.sGST)) / 100;
-      //     totalTax += taxAmount;
-
-      //     return {
-      //       ...tax,
-      //       taxPrice: taxAmount,
-      //     };
-      //   }) || [];
-
-      // updateDetails.tax = calculatedTaxes;
-      // updateDetails.totalTax = totalTax;
-      // updateDetails.totalInvoice = totalTax + totalExpensePrice + totalNewServicePrice + totalOldServicePrice;
       const servicesWithPrices = await this.ServicePriceCalculation(
         updateDetails.noOfContainer!,
         updateDetails.services!,
@@ -268,12 +227,18 @@ export class SalesOrderServices {
 
   async setupReportDetails(
     data: Partial<SalesOrder>,
+    orderDetail: SalesOrder | null,
     servicesList: Service[],
     clientServicesList: ClientService[],
     isFromUpdate: boolean,
+    orderId: string,
   ): Promise<void> {
-    const serviceReports: ServiceContainerModel[] = [];
+    const existingServiceReports: ServiceContainerMetaData[] = [];
     const promise: Promise<ServiceContainerMetaData>[] = [];
+    const promise2 = [];
+
+    const existingReport = isFromUpdate ? await this.reportRepository.findReportBySalesOrder(orderId) : null;
+
     for (const service of data.services ?? []) {
       const serviceFromClient = clientServicesList.find((cs) => {
         return isFromUpdate
@@ -294,11 +259,12 @@ export class SalesOrderServices {
         console.error(`Client service not found for service: ${serviceFromClient.serviceName}`);
         throw new Error(`Client service not found for service: ${serviceFromClient.serviceName}`);
       }
+      const existingServiceReport = existingReport?.serviceReports?.find(
+        (report) => report.serviceName === service.serviceName,
+      );
+
       const containerImages = clientService.serviceImage
-        .filter((element) => {
-          const imageCount = Number(element.imageCount);
-          return imageCount > 0;
-        })
+        .filter((element) => Number(element.imageCount) > 0)
         .flatMap((element) => {
           const imageCount = Number(element.imageCount);
           return Array.from({ length: imageCount }, (_, i) => ({
@@ -311,25 +277,48 @@ export class SalesOrderServices {
       const container: ContainerModel = { containerImages };
       const containerList = Array.from({ length: data.noOfContainer ?? 0 }, () => container);
 
-      const serviceReport: ServiceContainerModel = {
-        serviceName: service.serviceName,
-        containerReports: containerList,
-      };
-      serviceReports.push(serviceReport);
-      promise.push(
-        this.reportRepository
-          .createServiceReport(serviceReport)
-          .then((id) => ({
-            serviceName: serviceReport.serviceName,
-            serviceId: id,
-          }))
-          .catch((error) => {
-            throw new Error(`Failed to create service report: ${error.message}`);
-          }),
-      );
+      if (isFromUpdate && existingServiceReport) {
+        if (data.noOfContainer !== orderDetail!.noOfContainer) {
+          const serviceReport: ServiceContainerModel = {
+            serviceName: existingServiceReport.serviceName,
+            containerReports: containerList,
+          };
+          promise2.push(this.reportRepository.updateServiceReport(existingServiceReport.serviceId!, serviceReport));
+        }
+        existingServiceReports.push(existingServiceReport);
+      } else {
+        const serviceReport: ServiceContainerModel = {
+          serviceName: service.serviceName,
+          containerReports: containerList,
+        };
+        promise.push(
+          this.reportRepository
+            .createServiceReport(serviceReport)
+            .then((id) => ({
+              serviceName: serviceReport.serviceName,
+              serviceId: id,
+            }))
+            .catch((error) => {
+              throw new Error(`Failed to create service report: ${error.message}`);
+            }),
+        );
+      }
     }
 
-    const result = await Promise.all(promise);
+    if (isFromUpdate && existingReport) {
+      const updatedServiceNames = data.services?.map((service) => service.serviceName) ?? [];
+      const servicesToRemove =
+        existingReport?.serviceReports?.filter((report) => !updatedServiceNames.includes(report.serviceName!)) ?? [];
+      const promise3 = [];
+      for (const serviceToRemove of servicesToRemove) {
+        promise3.push(this.reportRepository.deleteServiceReport(new Types.ObjectId(serviceToRemove.serviceId)));
+      }
+      Promise.all(promise3);
+    }
+
+    let result = await Promise.all(promise);
+    await Promise.all(promise2);
+    result = result.concat(existingServiceReports);
     const reportData: Report = {
       orderId: data.orderId,
       isEmailSended: false,
@@ -338,7 +327,11 @@ export class SalesOrderServices {
       serviceReports: result,
     };
 
-    await this.reportRepository.create(reportData);
+    if (isFromUpdate && existingReport) {
+      await this.reportRepository.update(existingReport._id!.toString(), reportData);
+    } else {
+      await this.reportRepository.create(reportData);
+    }
   }
 
   async getSalesOrderById(id: string): Promise<SalesOrder | null> {

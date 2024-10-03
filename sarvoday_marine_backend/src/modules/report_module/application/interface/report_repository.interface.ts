@@ -4,6 +4,7 @@ import { ContainerModel, Report, ServiceContainerModel } from './report.interfac
 export interface ReportRepository {
   create(report: Report): Promise<void>;
   createServiceReport(serviceDetail: ServiceContainerModel): Promise<string>;
+  deleteServiceReport(serviceId: mongoose.Types.ObjectId): Promise<void>;
   update(id: string, report: Partial<Report>): Promise<Report | null>;
   findById(reportId: mongoose.Types.ObjectId): Promise<Report | null>;
   findReportBySalesOrder(orderId: string): Promise<Report | null>;

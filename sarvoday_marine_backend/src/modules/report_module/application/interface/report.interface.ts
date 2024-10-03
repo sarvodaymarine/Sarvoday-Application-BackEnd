@@ -55,6 +55,7 @@ export interface ServiceContainerMetaData {
 }
 
 export interface Report {
+  _id?: ObjectId;
   orderId?: string;
   serviceReports?: ServiceContainerMetaData[];
   isReviewed?: boolean;

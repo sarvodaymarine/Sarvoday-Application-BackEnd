@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import {
   ContainerImageConfig,
   ContainerModel,
@@ -56,9 +56,7 @@ const serviceReportMetaDataConfigSchema = new Schema<ServiceContainerMetaData>({
   reportStatus: { type: String, required: false, default: 'Pending', enum: ReportStatus },
 });
 
-interface IReportModel extends Report, Document {}
-
-const ReportModelSchema = new Schema<IReportModel>(
+const ReportModelSchema = new Schema<Report>(
   {
     orderId: { type: String, required: false },
     serviceReports: { type: [serviceReportMetaDataConfigSchema], required: false },
@@ -73,4 +71,4 @@ ReportModelSchema.set('toJSON', { getters: true });
 ReportModelSchema.set('toObject', { getters: true });
 
 export const ServiceReportModel = model<ServiceContainerModel>('ServiceReports', ServiceContainerModelSchema);
-export const ReportModel = model<IReportModel>('Reports', ReportModelSchema);
+export const ReportModel = model<Report>('Reports', ReportModelSchema);

@@ -23,6 +23,10 @@ export class ReportRepositoryImpl implements ReportRepository {
     );
   }
 
+  async deleteServiceReport(serviceId: mongoose.Types.ObjectId): Promise<void> {
+    await ServiceReportModel.findByIdAndDelete(serviceId);
+  }
+
   async updateServiceContainerPDFPath(
     serviceId: mongoose.Types.ObjectId,
     containerId: mongoose.Types.ObjectId,
